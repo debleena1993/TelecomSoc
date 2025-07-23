@@ -125,3 +125,12 @@ The system is designed for scalability, with clear separation between data inges
 - Imported 2000 CSV records of Jio user incoming calls and SMS data
 - Fixed client-server separation and security best practices
 - Verified all core functionality working with real-time threat detection
+
+## Recent Changes
+
+**July 23, 2025:**
+- Successfully migrated TelecomSOC platform from Replit Agent to Replit environment
+- Added new `telecom_user_activity_log` table to database schema for user activity tracking
+- Imported 2000 CSV records of Jio user incoming calls and SMS data
+- Fixed client-server separation and security best practices
+- Verified all core functionality working with real-time threat detection
