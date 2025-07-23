@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
@@ -169,275 +169,159 @@ export default function TelecomAnalytics() {
             </Card>
           </div>
 
-          <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList>
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="locations">Locations</TabsTrigger>
-              <TabsTrigger value="network">Network Usage</TabsTrigger>
-              <TabsTrigger value="activities">Recent Activities</TabsTrigger>
-              <TabsTrigger value="fraud">Fraud Analysis</TabsTrigger>
-            </TabsList>
+          {/* Main Dashboard Components */}
+          <div className="space-y-6">
+            {/* Activity by Location */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5" />
+                  Activity by Location
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart data={stats.topLocations}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="location" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="count" fill="#0088FE" name="Total Activities" />
+                    <Bar dataKey="fraudCount" fill="#FF8042" name="Fraud Incidents" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
 
-            <TabsContent value="overview" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Phone className="h-5 w-5" />
-                      Activity Breakdown
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                        <Pie
-                          data={[
-                            { name: "Calls", value: stats.callCount, color: "#0088FE" },
-                            { name: "SMS", value: stats.smsCount, color: "#00C49F" },
-                          ]}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                        >
-                          {[0, 1].map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={index === 0 ? "#0088FE" : "#00C49F"} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Wifi className="h-5 w-5" />
-                      Network Type Distribution
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={stats.networkUsage}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="networkType" />
-                        <YAxis />
-                        <Tooltip />
-                        <Bar dataKey="count" fill="#8884d8" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="locations" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5" />
-                    Activity by Location
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={400}>
-                    <BarChart data={stats.topLocations}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="location" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="count" fill="#0088FE" name="Total Activities" />
-                      <Bar dataKey="fraudCount" fill="#FF8042" name="Fraud Incidents" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="network" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Wifi className="h-5 w-5" />
-                    Network Usage Analytics
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                        <Pie
-                          data={stats.networkUsage}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={({ networkType, percent }) => `${networkType} ${(percent * 100).toFixed(0)}%`}
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="count"
-                        >
-                          {stats.networkUsage.map((entry: any, index: number) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-                    
-                    <div className="space-y-4">
-                      {stats.networkUsage.map((network: any, index: number) => (
-                        <div key={network.networkType} className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <div 
-                              className="w-4 h-4 rounded-full" 
-                              style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                            />
-                            <span className="font-medium">{network.networkType}</span>
+            {/* Recent Activities */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Recent Activities ({activities?.length || 0})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {activitiesLoading ? (
+                  <div className="text-center py-8">Loading activities...</div>
+                ) : (
+                  <div className="space-y-2">
+                    {activities?.slice(0, 20).map((activity: any) => (
+                      <div key={activity.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          {activity.activityType === 'call' ? (
+                            <Phone className="h-4 w-4 text-blue-600" />
+                          ) : (
+                            <MessageCircle className="h-4 w-4 text-green-600" />
+                          )}
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">
+                                {activity.activityType.toUpperCase()} {activity.direction}
+                              </span>
+                              {activity.isSpamOrFraud === 1 && (
+                                <Badge variant="destructive">FRAUD</Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {activity.peerNumber} • {activity.location} • {activity.networkType}
+                            </p>
                           </div>
-                          <span className="text-lg font-bold">{network.count}</span>
                         </div>
-                      ))}
-                    </div>
+                        <div className="text-right">
+                          <div className="text-sm font-medium">
+                            {new Date(activity.timestamp).toLocaleTimeString()}
+                          </div>
+                          {activity.activityType === 'call' && (
+                            <div className="text-xs text-muted-foreground">
+                              {activity.durationSec}s
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                )}
+              </CardContent>
+            </Card>
 
-            <TabsContent value="activities" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
-                    Recent Activities ({activities?.length || 0})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {activitiesLoading ? (
-                    <div className="text-center py-8">Loading activities...</div>
-                  ) : (
+            {/* Fraud Analysis */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                  Fraud Detection Analysis
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {fraudLoading ? (
+                  <div className="text-center py-8">Loading fraud analysis...</div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="text-2xl font-bold text-red-600">{fraudActivities?.length || 0}</div>
+                          <p className="text-sm text-muted-foreground">Total Fraud Incidents</p>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="text-2xl font-bold text-orange-600">
+                            {fraudActivities?.filter((a: any) => a.activityType === 'call').length || 0}
+                          </div>
+                          <p className="text-sm text-muted-foreground">Fraudulent Calls</p>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="text-2xl font-bold text-yellow-600">
+                            {fraudActivities?.filter((a: any) => a.activityType === 'sms').length || 0}
+                          </div>
+                          <p className="text-sm text-muted-foreground">Fraudulent SMS</p>
+                        </CardContent>
+                      </Card>
+                    </div>
+
                     <div className="space-y-2">
-                      {activities?.slice(0, 20).map((activity: any) => (
-                        <div key={activity.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      {fraudActivities?.slice(0, 10).map((activity: any) => (
+                        <div key={activity.id} className="flex items-center justify-between p-3 border border-red-200 rounded-lg bg-red-50">
                           <div className="flex items-center gap-3">
                             {activity.activityType === 'call' ? (
-                              <Phone className="h-4 w-4 text-blue-600" />
+                              <Phone className="h-4 w-4 text-red-600" />
                             ) : (
-                              <MessageCircle className="h-4 w-4 text-green-600" />
+                              <MessageCircle className="h-4 w-4 text-red-600" />
                             )}
                             <div>
                               <div className="flex items-center gap-2">
-                                <span className="font-medium">
-                                  {activity.activityType.toUpperCase()} {activity.direction}
+                                <span className="font-medium text-red-800">
+                                  FRAUD: {activity.activityType.toUpperCase()} {activity.direction}
                                 </span>
-                                {activity.isSpamOrFraud === 1 && (
-                                  <Badge variant="destructive">FRAUD</Badge>
-                                )}
+                                <Badge variant="destructive">HIGH RISK</Badge>
                               </div>
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-sm text-red-600">
                                 {activity.peerNumber} • {activity.location} • {activity.networkType}
                               </p>
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="text-sm font-medium">
-                              {new Date(activity.timestamp).toLocaleTimeString()}
+                            <div className="text-sm font-medium text-red-800">
+                              {new Date(activity.timestamp).toLocaleString()}
                             </div>
                             {activity.activityType === 'call' && (
-                              <div className="text-xs text-muted-foreground">
-                                {activity.durationSec}s
+                              <div className="text-xs text-red-600">
+                                {activity.durationSec}s duration
                               </div>
                             )}
                           </div>
                         </div>
                       ))}
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="fraud" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <AlertTriangle className="h-5 w-5 text-red-600" />
-                    Fraud Detection Analysis
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {fraudLoading ? (
-                    <div className="text-center py-8">Loading fraud analysis...</div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <Card>
-                          <CardContent className="p-4">
-                            <div className="text-2xl font-bold text-red-600">{fraudActivities?.length || 0}</div>
-                            <p className="text-sm text-muted-foreground">Total Fraud Incidents</p>
-                          </CardContent>
-                        </Card>
-                        <Card>
-                          <CardContent className="p-4">
-                            <div className="text-2xl font-bold text-orange-600">
-                              {fraudActivities?.filter((a: any) => a.activityType === 'call').length || 0}
-                            </div>
-                            <p className="text-sm text-muted-foreground">Fraudulent Calls</p>
-                          </CardContent>
-                        </Card>
-                        <Card>
-                          <CardContent className="p-4">
-                            <div className="text-2xl font-bold text-yellow-600">
-                              {fraudActivities?.filter((a: any) => a.activityType === 'sms').length || 0}
-                            </div>
-                            <p className="text-sm text-muted-foreground">Fraudulent SMS</p>
-                          </CardContent>
-                        </Card>
-                      </div>
-
-                      <div className="space-y-2">
-                        {fraudActivities?.slice(0, 10).map((activity: any) => (
-                          <div key={activity.id} className="flex items-center justify-between p-3 border border-red-200 rounded-lg bg-red-50">
-                            <div className="flex items-center gap-3">
-                              {activity.activityType === 'call' ? (
-                                <Phone className="h-4 w-4 text-red-600" />
-                              ) : (
-                                <MessageCircle className="h-4 w-4 text-red-600" />
-                              )}
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium text-red-800">
-                                    FRAUD: {activity.activityType.toUpperCase()} {activity.direction}
-                                  </span>
-                                  <Badge variant="destructive">HIGH RISK</Badge>
-                                </div>
-                                <p className="text-sm text-red-600">
-                                  {activity.peerNumber} • {activity.location} • {activity.networkType}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-sm font-medium text-red-800">
-                                {new Date(activity.timestamp).toLocaleString()}
-                              </div>
-                              {activity.activityType === 'call' && (
-                                <div className="text-xs text-red-600">
-                                  {activity.durationSec}s duration
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </>
       )}
     </div>
