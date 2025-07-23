@@ -198,7 +198,7 @@ export default function TelecomAnalytics() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />
-                  Recent Activities ({activities?.length || 0})
+                  Recent Activities
                 </CardTitle>
               </CardHeader>
               <CardContent>
