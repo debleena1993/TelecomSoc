@@ -19,12 +19,12 @@ function Router() {
       <Sidebar />
       <main className="flex-1 overflow-auto">
         <Switch>
-          <Route path="/" component={Dashboard} />
+          <Route path="/" component={TelecomAnalytics} />
           <Route path="/anomaly-detection" component={AnomalyDetection} />
           <Route path="/auto-response" component={AutoResponse} />
           <Route path="/fraud-detection" component={FraudDetection} />
-          <Route path="/compliance-reports" component={ComplianceReports} />
-          <Route path="/telecom-analytics" component={TelecomAnalytics} />
+          {/* <Route path="/compliance-reports" component={ComplianceReports} />
+           */}
           <Route path="/fraud-analysis-demo" component={FraudAnalysisDemo} />
           <Route component={NotFound} />
         </Switch>

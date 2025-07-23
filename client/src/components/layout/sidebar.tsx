@@ -7,8 +7,8 @@ const navigation = [
   { name: "Anomaly Detection", href: "/anomaly-detection", icon: Search },
   { name: "Auto Response", href: "/auto-response", icon: Bot },
   { name: "Fraud Detection", href: "/fraud-detection", icon: ShieldQuestion },
-  { name: "Compliance Reports", href: "/compliance-reports", icon: FileText },
-  { name: "Telecom Analytics", href: "/telecom-analytics", icon: Phone },
+  // { name: "Compliance Reports", href: "/compliance-reports", icon: FileText },
+  // { name: "Telecom Analytics", href: "/telecom-analytics", icon: Phone },
 ];
 
 const systemStatus = [
