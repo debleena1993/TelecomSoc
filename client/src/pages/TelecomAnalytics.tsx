@@ -206,7 +206,7 @@ export default function TelecomAnalytics() {
                   <div className="text-center py-8">Loading activities...</div>
                 ) : (
                   <div className="space-y-2">
-                    {activities?.slice(0, 20).map((activity: any) => (
+                    {activities?.slice(0, 10).map((activity: any) => (
                       <div key={activity.id} className="flex items-center justify-between p-3 border rounded-lg">
                         <div className="flex items-center gap-3">
                           {activity.activityType === 'call' ? (
@@ -284,7 +284,7 @@ export default function TelecomAnalytics() {
                     </div>
 
                     <div className="space-y-2">
-                      {fraudActivities?.slice(0, 10).map((activity: any) => (
+                      {fraudActivities?.slice(0, 5).map((activity: any) => (
                         <div key={activity.id} className="flex items-center justify-between p-3 border border-red-200 rounded-lg bg-red-50">
                           <div className="flex items-center gap-3">
                             {activity.activityType === 'call' ? (
