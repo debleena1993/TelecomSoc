@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: "AIzaSyDwTVSoa-Fake-iFbFZRBv-T8PoYc" });
+const ai = new GoogleGenAI({ apiKey: "AIzaSyBokbTLyJ6In115ll_UkgshWlsxo5P-pq8" });
 
 export interface ThreatAnalysis {
   threatScore: number;

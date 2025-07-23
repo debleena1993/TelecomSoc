@@ -35,7 +35,7 @@ export default function TelecomAnalytics() {
   const { data: activities, isLoading: activitiesLoading } = useQuery({
     queryKey: ["/api/telecom/activities", selectedUserId],
     queryFn: () => 
-      fetch(`/api/telecom/activities?userId=${selectedUserId}&limit=50`)
+      fetch(`/api/telecom/activities?userId=${selectedUserId}&limit=10`)
         .then(res => res.json()),
     refetchInterval: 5000,
   });

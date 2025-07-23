@@ -5,8 +5,7 @@ import {
   type ComplianceReport, type InsertComplianceReport,
   type SystemConfig, type InsertSystemConfig, type TelecomUserActivityLog, type InsertTelecomUserActivityLog
 } from "@shared/schema";
-import { drizzle } from "drizzle-orm/neon-http";
-import { neon } from "@neondatabase/serverless";
+import { db, dbConnection } from "./config/database";
 import { desc, eq, gte, lte, and, count, avg, sql } from "drizzle-orm";
 
 export interface IStorage {
@@ -341,11 +340,27 @@ class DatabaseStorage implements IStorage {
   private memStorage: MemStorage;
 
   constructor() {
-    if (process.env.DATABASE_URL) {
-      const sql = neon(process.env.DATABASE_URL);
-      this.db = drizzle(sql);
-    }
+    // Use the configured database connection
+    this.db = db;
     this.memStorage = new MemStorage();
+    
+    // Test database connection on initialization
+    this.testDatabaseConnection();
+  }
+
+  private async testDatabaseConnection(): Promise<void> {
+    try {
+      const isConnected = await dbConnection.testConnection();
+      if (isConnected) {
+        const config = dbConnection.getConfig();
+        console.log(`✅ Database connection verified: ${config.host}:${config.port}/${config.database}`);
+      } else {
+        console.log('❌ Database connection test failed, falling back to memory storage');
+      }
+    } catch (error) {
+      console.error('Database connection error:', error);
+      console.log('Falling back to memory storage for data operations');
+    }
   }
 
   // Delegate most methods to MemStorage for now
@@ -378,9 +393,17 @@ class DatabaseStorage implements IStorage {
     let query = this.db.select().from(telecomUserActivityLog);
     
     if (userId) {
+      console.log("userId====",userId);
       query = query.where(eq(telecomUserActivityLog.userId, userId));
     }
-    
+    // Convert to SQL string before executing
+    const { sql, params } = query
+      .orderBy(desc(telecomUserActivityLog.timestamp))
+      .limit(limit)
+      .offset(offset)
+      .toSQL();
+
+    console.log("🪄 Raw SQL:", sql);
     const results = await query
       .orderBy(desc(telecomUserActivityLog.timestamp))
       .limit(limit)
