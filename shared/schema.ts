@@ -57,6 +57,23 @@ export const systemConfig = pgTable("system_config", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const telecomUserActivityLog = pgTable("telecom_user_activity_log", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  timestamp: timestamp("timestamp").notNull(),
+  activityType: text("activity_type").notNull(), // 'call', 'sms'
+  direction: text("direction").notNull(), // 'incoming', 'outgoing'
+  peerNumber: text("peer_number").notNull(),
+  durationSec: integer("duration_sec").notNull().default(0),
+  location: text("location").notNull(),
+  deviceImei: text("device_imei").notNull(),
+  simImsi: text("sim_imsi").notNull(),
+  networkType: text("network_type").notNull(), // '4G', '5G', etc.
+  dataUsedMb: real("data_used_mb").notNull().default(0.0),
+  isRoaming: text("is_roaming").notNull(), // 'yes', 'no'
+  isSpamOrFraud: integer("is_spam_or_fraud").notNull().default(0), // 0 or 1
+});
+
 // Insert schemas
 export const insertThreatSchema = createInsertSchema(threats).omit({
   id: true,
@@ -83,6 +100,10 @@ export const insertSystemConfigSchema = createInsertSchema(systemConfig).omit({
   updatedAt: true,
 });
 
+export const insertTelecomUserActivityLogSchema = createInsertSchema(telecomUserActivityLog).omit({
+  id: true,
+});
+
 // Types
 export type Threat = typeof threats.$inferSelect;
 export type InsertThreat = z.infer<typeof insertThreatSchema>;
@@ -94,6 +115,8 @@ export type ComplianceReport = typeof complianceReports.$inferSelect;
 export type InsertComplianceReport = z.infer<typeof insertComplianceReportSchema>;
 export type SystemConfig = typeof systemConfig.$inferSelect;
 export type InsertSystemConfig = z.infer<typeof insertSystemConfigSchema>;
+export type TelecomUserActivityLog = typeof telecomUserActivityLog.$inferSelect;
+export type InsertTelecomUserActivityLog = z.infer<typeof insertTelecomUserActivityLogSchema>;
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;

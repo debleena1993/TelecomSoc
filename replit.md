@@ -116,3 +116,12 @@ Located in `shared/schema.ts`, defines core entities:
 6. **Monolithic Structure**: Single repository with shared types for rapid development and deployment
 
 The system is designed for scalability, with clear separation between data ingestion, AI analysis, and user interface layers. The real-time capabilities and automated response features make it suitable for production cybersecurity monitoring environments.
+
+## Recent Changes
+
+**July 23, 2025:**
+- Successfully migrated TelecomSOC platform from Replit Agent to Replit environment
+- Added new `telecom_user_activity_log` table to database schema for user activity tracking
+- Imported 2000 CSV records of Jio user incoming calls and SMS data
+- Fixed client-server separation and security best practices
+- Verified all core functionality working with real-time threat detection
