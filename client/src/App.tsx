@@ -10,6 +10,7 @@ import AutoResponse from "@/pages/auto-response";
 import FraudDetection from "@/pages/fraud-detection";
 import ComplianceReports from "@/pages/compliance-reports";
 import TelecomAnalytics from "@/pages/TelecomAnalytics";
+import FraudAnalysisDemo from "@/pages/FraudAnalysisDemo";
 import Sidebar from "@/components/layout/sidebar";
 
 function Router() {
@@ -24,6 +25,7 @@ function Router() {
           <Route path="/fraud-detection" component={FraudDetection} />
           <Route path="/compliance-reports" component={ComplianceReports} />
           <Route path="/telecom-analytics" component={TelecomAnalytics} />
+          <Route path="/fraud-analysis-demo" component={FraudAnalysisDemo} />
           <Route component={NotFound} />
         </Switch>
       </main>
