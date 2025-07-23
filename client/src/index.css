@@ -1,0 +1,216 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(222, 84%, 95%);
+  --foreground: hsl(222, 84%, 4.9%);
+  --muted: hsl(210, 40%, 96%);
+  --muted-foreground: hsl(215.4, 16.3%, 46.9%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(222, 84%, 4.9%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(222, 84%, 4.9%);
+  --border: hsl(214.3, 31.8%, 91.4%);
+  --input: hsl(214.3, 31.8%, 91.4%);
+  --primary: hsl(24, 100%, 51%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(210, 40%, 96%);
+  --secondary-foreground: hsl(222.2, 84%, 4.9%);
+  --accent: hsl(210, 40%, 96%);
+  --accent-foreground: hsl(222.2, 84%, 4.9%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(222.2, 84%, 4.9%);
+  --radius: 0.5rem;
+  
+  /* Custom PwC-inspired cybersecurity theme */
+  --pwc-orange: hsl(24, 100%, 51%);
+  --pwc-blue: hsl(210, 100%, 20%);
+  --dark-bg: hsl(222, 47%, 11%);
+  --card-bg: hsl(222, 47%, 18%);
+  --border-gray: hsl(215, 16%, 32%);
+  --threat-critical: hsl(0, 84%, 60%);
+  --threat-high: hsl(45, 100%, 51%);
+  --threat-medium: hsl(60, 100%, 51%);
+  --threat-low: hsl(120, 100%, 40%);
+}
+
+.dark {
+  --background: hsl(222, 47%, 11%);
+  --foreground: hsl(210, 40%, 98%);
+  --muted: hsl(222, 47%, 18%);
+  --muted-foreground: hsl(215, 20.2%, 65.1%);
+  --popover: hsl(222, 47%, 18%);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --card: hsl(222, 47%, 18%);
+  --card-foreground: hsl(210, 40%, 98%);
+  --border: hsl(215, 16%, 32%);
+  --input: hsl(215, 16%, 32%);
+  --primary: hsl(24, 100%, 51%);
+  --primary-foreground: hsl(222, 84%, 4.9%);
+  --secondary: hsl(222, 47%, 18%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --accent: hsl(222, 47%, 18%);
+  --accent-foreground: hsl(210, 40%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(212.7, 26.8%, 83.9%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* Ensure dark theme by default */
+  html {
+    @apply dark;
+  }
+
+  html.dark body {
+    background-color: var(--dark-bg);
+    color: hsl(210, 40%, 98%);
+  }
+}
+
+@layer components {
+  .threat-gauge {
+    @apply relative inline-flex items-center justify-center;
+  }
+  
+  .threat-level-critical {
+    @apply text-red-500 bg-red-500/20;
+  }
+  
+  .threat-level-high {
+    @apply text-yellow-500 bg-yellow-500/20;
+  }
+  
+  .threat-level-medium {
+    @apply text-blue-400 bg-blue-400/20;
+  }
+  
+  .threat-level-low {
+    @apply text-green-500 bg-green-500/20;
+  }
+
+  .pwc-sidebar {
+    background-color: var(--card-bg);
+    border-right: 1px solid var(--border-gray);
+  }
+
+  .pwc-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-gray);
+    @apply rounded-xl;
+  }
+
+  .pwc-button-primary {
+    background-color: var(--pwc-orange);
+    @apply text-white hover:opacity-90 transition-all duration-200;
+  }
+
+  .pwc-button-secondary {
+    background-color: hsl(215, 16%, 32%);
+    @apply text-white hover:bg-slate-600 transition-all duration-200;
+  }
+
+  .animate-pulse-dot {
+    animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  .threat-timeline-chart {
+    @apply w-full h-64;
+  }
+
+  .status-indicator {
+    @apply w-2 h-2 rounded-full;
+  }
+
+  .status-online {
+    @apply bg-green-500 animate-pulse-dot;
+  }
+
+  .status-warning {
+    @apply bg-yellow-500;
+  }
+
+  .status-offline {
+    @apply bg-red-500;
+  }
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(222, 47%, 18%);
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(215, 16%, 32%);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(215, 16%, 40%);
+}
+
+/* Range slider styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-track {
+  background: hsl(215, 16%, 32%);
+  height: 8px;
+  border-radius: 4px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--pwc-orange);
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+input[type="range"]::-moz-range-track {
+  background: hsl(215, 16%, 32%);
+  height: 8px;
+  border-radius: 4px;
+  border: none;
+}
+
+input[type="range"]::-moz-range-thumb {
+  background: var(--pwc-orange);
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
