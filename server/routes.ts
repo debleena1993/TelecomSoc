@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { threatAnalysisService } from "./services/threatAnalysis";
 import { mockDataGenerator } from "./services/mockData";
+import { fraudAnalysisService } from "./services/fraudAnalysis";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -307,6 +308,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ riskScore });
     } catch (error) {
       res.status(500).json({ error: "Failed to get overall risk score" });
+    }
+  });
+
+  // AI-powered fraud analysis using Gemini
+  app.get("/api/telecom/fraud-analysis", async (req, res) => {
+    try {
+      const { userId } = req.query;
+      const analysis = await fraudAnalysisService.analyzeUserActivity(userId as string);
+      res.json(analysis);
+    } catch (error) {
+      console.error('Fraud analysis error:', error);
+      res.status(500).json({ error: "Failed to perform fraud analysis" });
+    }
+  });
+
+  app.post("/api/telecom/fraud-analysis", async (req, res) => {
+    try {
+      const { userId } = req.body;
+      const analysis = await fraudAnalysisService.analyzeUserActivity(userId);
+      res.json(analysis);
+    } catch (error) {
+      console.error('Fraud analysis error:', error);
+      res.status(500).json({ error: "Failed to perform fraud analysis" });
     }
   });
 
