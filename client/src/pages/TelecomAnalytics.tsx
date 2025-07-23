@@ -10,41 +10,40 @@ import { Phone, MessageCircle, Shield, TrendingUp, MapPin, Wifi, AlertTriangle, 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
 export default function TelecomAnalytics() {
-  const [selectedUserId, setSelectedUserId] = useState("U001");
   const [timeRange, setTimeRange] = useState("week");
 
   // Fetch telecom activity stats
   const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ["/api/telecom/stats", selectedUserId, timeRange],
+    queryKey: ["/api/telecom/stats", timeRange],
     queryFn: () => 
-      fetch(`/api/telecom/stats?userId=${selectedUserId}&timeRange=${timeRange}`)
+      fetch(`/api/telecom/stats?timeRange=${timeRange}`)
         .then(res => res.json()),
     refetchInterval: 10000,
   });
 
-  // Fetch user risk score
+  // Fetch overall risk analysis
   const { data: riskData, isLoading: riskLoading } = useQuery({
-    queryKey: ["/api/telecom/user-risk", selectedUserId],
+    queryKey: ["/api/telecom/overall-risk"],
     queryFn: () => 
-      fetch(`/api/telecom/user-risk/${selectedUserId}`)
+      fetch(`/api/telecom/overall-risk`)
         .then(res => res.json()),
     refetchInterval: 30000,
   });
 
   // Fetch recent activities
   const { data: activities, isLoading: activitiesLoading } = useQuery({
-    queryKey: ["/api/telecom/activities", selectedUserId],
+    queryKey: ["/api/telecom/activities"],
     queryFn: () => 
-      fetch(`/api/telecom/activities?userId=${selectedUserId}&limit=10`)
+      fetch(`/api/telecom/activities?limit=10`)
         .then(res => res.json()),
     refetchInterval: 5000,
   });
 
   // Fetch fraud activities
   const { data: fraudActivities, isLoading: fraudLoading } = useQuery({
-    queryKey: ["/api/telecom/fraud-activities", selectedUserId],
+    queryKey: ["/api/telecom/fraud-activities"],
     queryFn: () => 
-      fetch(`/api/telecom/fraud-activities?userId=${selectedUserId}`)
+      fetch(`/api/telecom/fraud-activities`)
         .then(res => res.json()),
     refetchInterval: 10000,
   });
@@ -85,18 +84,9 @@ export default function TelecomAnalytics() {
         </div>
         
         <div className="flex gap-4">
-          <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="U001">User U001</SelectItem>
-            </SelectContent>
-          </Select>
-          
           <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
+            <SelectTrigger className="w-32 bg-muted text-foreground border-muted">
+              <SelectValue className="text-foreground font-medium" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="hour">1 Hour</SelectItem>

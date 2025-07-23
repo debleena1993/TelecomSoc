@@ -54,6 +54,7 @@ export interface IStorage {
     networkUsage: Array<{ networkType: string; count: number }>;
   }>;
   getTelecomUserRiskScore(userId: string): Promise<number>;
+  getTelecomOverallRiskScore(): Promise<number>;
 
   // Analytics methods
   getThreatStats(): Promise<{
@@ -295,6 +296,11 @@ export class MemStorage implements IStorage {
   async getTelecomUserRiskScore(userId: string): Promise<number> {
     // Return default risk score for MemStorage, will be overridden by database implementation
     return 0;
+  }
+
+  async getTelecomOverallRiskScore(): Promise<number> {
+    // Return default overall risk score for MemStorage, will be overridden by database implementation
+    return 3;
   }
 
   async getThreatStats(): Promise<{
@@ -606,6 +612,55 @@ class DatabaseStorage implements IStorage {
     
     // High activity volume
     if (stats.totalActivities > 100) riskScore += 1;
+
+    return Math.min(10, Number(riskScore.toFixed(1)));
+  }
+
+  async getTelecomOverallRiskScore(): Promise<number> {
+    if (!this.db) return 3;
+
+    // Calculate overall risk score based on all recent activity patterns
+    const recentActivityQuery = this.db
+      .select({
+        totalActivities: count(),
+        fraudCount: sql<number>`SUM(CASE WHEN ${telecomUserActivityLog.isSpamOrFraud} = 1 THEN 1 ELSE 0 END)`,
+        roamingCount: sql<number>`SUM(CASE WHEN ${telecomUserActivityLog.isRoaming} = 'yes' THEN 1 ELSE 0 END)`,
+        avgCallDuration: avg(telecomUserActivityLog.durationSec)
+      })
+      .from(telecomUserActivityLog)
+      .where(
+        gte(telecomUserActivityLog.timestamp, new Date(Date.now() - 24 * 60 * 60 * 1000)) // Last 24 hours
+      );
+
+    const result = await recentActivityQuery;
+    const stats = result[0];
+
+    if (!stats || stats.totalActivities === 0) return 3;
+
+    // Risk factors for overall network
+    const fraudRate = (stats.fraudCount / stats.totalActivities) * 100;
+    const roamingRate = (stats.roamingCount / stats.totalActivities) * 100;
+    const avgDuration = stats.avgCallDuration || 0;
+
+    // Calculate composite risk score (0-10 scale)
+    let riskScore = 3; // Base risk level
+    
+    // High fraud rate increases risk significantly
+    if (fraudRate > 15) riskScore += 3;
+    else if (fraudRate > 8) riskScore += 2;
+    else if (fraudRate > 3) riskScore += 1;
+    
+    // High roaming activity increases risk
+    if (roamingRate > 40) riskScore += 1;
+    else if (roamingRate > 20) riskScore += 0.5;
+    
+    // Unusual network patterns
+    if (avgDuration > 500) riskScore += 0.5; // Very long calls
+    if (avgDuration < 45) riskScore += 0.5; // Very short calls
+    
+    // High activity volume indicates potential attack
+    if (stats.totalActivities > 500) riskScore += 1;
+    else if (stats.totalActivities > 200) riskScore += 0.5;
 
     return Math.min(10, Number(riskScore.toFixed(1)));
   }

@@ -301,6 +301,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/telecom/overall-risk", async (req, res) => {
+    try {
+      const riskScore = await storage.getTelecomOverallRiskScore();
+      res.json({ riskScore });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get overall risk score" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
