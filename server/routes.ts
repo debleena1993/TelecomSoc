@@ -253,6 +253,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Telecom user activity routes
+  app.get("/api/telecom/activities", async (req, res) => {
+    try {
+      const { userId, limit = 100, offset = 0 } = req.query;
+      const activities = await storage.getTelecomActivities(
+        userId as string,
+        Number(limit),
+        Number(offset)
+      );
+      res.json(activities);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get telecom activities" });
+    }
+  });
+
+  app.get("/api/telecom/fraud-activities", async (req, res) => {
+    try {
+      const { userId } = req.query;
+      const fraudActivities = await storage.getTelecomFraudActivities(userId as string);
+      res.json(fraudActivities);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get fraud activities" });
+    }
+  });
+
+  app.get("/api/telecom/stats", async (req, res) => {
+    try {
+      const { userId, timeRange } = req.query;
+      const stats = await storage.getTelecomActivityStats(
+        userId as string,
+        timeRange as string
+      );
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get telecom stats" });
+    }
+  });
+
+  app.get("/api/telecom/user-risk/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const riskScore = await storage.getTelecomUserRiskScore(userId);
+      res.json({ userId, riskScore });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get user risk score" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

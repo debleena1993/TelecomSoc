@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Shield, Gauge, Search, Bot, ShieldQuestion, FileText } from "lucide-react";
+import { Shield, Gauge, Search, Bot, ShieldQuestion, FileText, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
@@ -8,6 +8,7 @@ const navigation = [
   { name: "Auto Response", href: "/auto-response", icon: Bot },
   { name: "Fraud Detection", href: "/fraud-detection", icon: ShieldQuestion },
   { name: "Compliance Reports", href: "/compliance-reports", icon: FileText },
+  { name: "Telecom Analytics", href: "/telecom-analytics", icon: Phone },
 ];
 
 const systemStatus = [
