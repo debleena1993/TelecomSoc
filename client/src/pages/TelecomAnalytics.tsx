@@ -264,14 +264,14 @@ export default function TelecomAnalytics() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                       <Card>
                         <CardContent className="p-4">
-                          <div className="text-2xl font-bold text-red-600">{fraudActivities?.length || 0}</div>
+                          <div className="text-2xl font-bold text-red-600">{Array.isArray(fraudActivities) ? fraudActivities.length : 0}</div>
                           <p className="text-sm text-muted-foreground">Total Fraud Incidents</p>
                         </CardContent>
                       </Card>
                       <Card>
                         <CardContent className="p-4">
                           <div className="text-2xl font-bold text-orange-600">
-                            {fraudActivities?.filter((a: any) => a.activityType === 'call').length || 0}
+                            {Array.isArray(fraudActivities) ? fraudActivities.filter((a: any) => a.activityType === 'call').length : 0}
                           </div>
                           <p className="text-sm text-muted-foreground">Fraudulent Calls</p>
                         </CardContent>
@@ -279,7 +279,7 @@ export default function TelecomAnalytics() {
                       <Card>
                         <CardContent className="p-4">
                           <div className="text-2xl font-bold text-yellow-600">
-                            {fraudActivities?.filter((a: any) => a.activityType === 'sms').length || 0}
+                            {Array.isArray(fraudActivities) ? fraudActivities.filter((a: any) => a.activityType === 'sms').length : 0}
                           </div>
                           <p className="text-sm text-muted-foreground">Fraudulent SMS</p>
                         </CardContent>
@@ -287,7 +287,7 @@ export default function TelecomAnalytics() {
                     </div>
 
                     <div className="space-y-2">
-                      {fraudActivities?.slice(0, 5).map((activity: any) => (
+                      {Array.isArray(fraudActivities) ? fraudActivities.slice(0, 5).map((activity: any) => (
                         <div key={activity.id} className="flex items-center justify-between p-3 border border-red-200 rounded-lg bg-red-50">
                           <div className="flex items-center gap-3">
                             {activity.activityType === 'call' ? (
@@ -318,7 +318,7 @@ export default function TelecomAnalytics() {
                             )}
                           </div>
                         </div>
-                      ))}
+                      )) : []}
                     </div>
                   </div>
                 )}

@@ -200,11 +200,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/anomalies", async (req, res) => {
     try {
       const config = await storage.getSystemConfig('sms_sensitivity');
-      const smsSensitivity = config?.value || 75;
+      const smsSensitivity = config?.configValue || 75;
       const callConfig = await storage.getSystemConfig('call_sensitivity');
-      const callSensitivity = callConfig?.value || 65;
+      const callSensitivity = callConfig?.configValue || 65;
       const fraudConfig = await storage.getSystemConfig('fraud_sensitivity');
-      const fraudSensitivity = fraudConfig?.value || 80;
+      const fraudSensitivity = fraudConfig?.configValue || 80;
       
       const anomalies = await anomalyDetectionService.analyzeAnomalies({
         sms_sensitivity: smsSensitivity,
