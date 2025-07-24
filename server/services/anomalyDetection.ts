@@ -33,6 +33,12 @@ export class AnomalyDetectionService {
 
   async analyzeAnomalies(config?: AnomalyAnalysisConfig): Promise<AnomalyResult[]> {
     try {
+      // Check if API key is available
+      if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY.trim() === '') {
+        console.log("Gemini API key not available, using statistical analysis only");
+        return await this.getStatisticalAnomalies();
+      }
+
       // Get recent telecom activity data
       const activities = await this.storage.getTelecomActivities(undefined, 1000);
       const fraudActivities = await this.storage.getTelecomFraudActivities();
@@ -95,48 +101,53 @@ Focus on detecting:
 Consider the sensitivity settings when determining severity levels.
 `;
 
-      const response = await this.ai.models.generateContent({
-        model: "gemini-2.5-pro",
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                id: { type: "string" },
-                timestamp: { type: "string" },
-                anomalyType: { type: "string" },
-                severity: { type: "string", enum: ["low", "medium", "high", "critical"] },
-                score: { type: "number" },
-                description: { type: "string" },
-                affectedMetrics: { type: "array", items: { type: "string" } },
-                confidence: { type: "number" },
-                source: { type: "string" },
-                details: { type: "object" }
-              },
-              required: ["id", "timestamp", "anomalyType", "severity", "score", "description", "confidence", "source"]
+      try {
+        const response = await this.ai.models.generateContent({
+          model: "gemini-2.5-pro",
+          config: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  id: { type: "string" },
+                  timestamp: { type: "string" },
+                  anomalyType: { type: "string" },
+                  severity: { type: "string", enum: ["low", "medium", "high", "critical"] },
+                  score: { type: "number" },
+                  description: { type: "string" },
+                  affectedMetrics: { type: "array", items: { type: "string" } },
+                  confidence: { type: "number" },
+                  source: { type: "string" },
+                  details: { type: "object" }
+                },
+                required: ["id", "timestamp", "anomalyType", "severity", "score", "description", "confidence", "source"]
+              }
             }
-          }
-        },
-        contents: prompt
-      });
+          },
+          contents: prompt
+        });
 
-      const rawJson = response.text;
-      if (!rawJson) {
-        console.error("Empty response from Gemini");
-        return [];
+        const rawJson = response.text;
+        if (!rawJson) {
+          console.error("Empty response from Gemini");
+          return await this.getStatisticalAnomalies();
+        }
+
+        const anomalies: AnomalyResult[] = JSON.parse(rawJson);
+        
+        // Validate and process results
+        return anomalies.map(anomaly => ({
+          ...anomaly,
+          timestamp: new Date(anomaly.timestamp),
+          affectedMetrics: anomaly.affectedMetrics || [],
+          details: anomaly.details || {}
+        }));
+      } catch (apiError) {
+        console.log("Gemini API error, falling back to statistical analysis:", apiError.message);
+        return await this.getStatisticalAnomalies();
       }
-
-      const anomalies: AnomalyResult[] = JSON.parse(rawJson);
-      
-      // Validate and process results
-      return anomalies.map(anomaly => ({
-        ...anomaly,
-        timestamp: new Date(anomaly.timestamp),
-        affectedMetrics: anomaly.affectedMetrics || [],
-        details: anomaly.details || {}
-      }));
 
     } catch (error) {
       console.error("Error in anomaly detection:", error);
