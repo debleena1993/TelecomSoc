@@ -13,8 +13,8 @@
   --card-foreground: hsl(222, 84%, 4.9%);
   --border: hsl(214.3, 31.8%, 91.4%);
   --input: hsl(214.3, 31.8%, 91.4%);
-  --primary: hsl(24, 100%, 51%);
-  --primary-foreground: hsl(210, 40%, 98%);
+  --primary: hsl(324, 74%, 64%);
+  --primary-foreground: hsl(0, 0%, 100%);
   --secondary: hsl(210, 40%, 96%);
   --secondary-foreground: hsl(222.2, 84%, 4.9%);
   --accent: hsl(210, 40%, 96%);
@@ -24,16 +24,20 @@
   --ring: hsl(222.2, 84%, 4.9%);
   --radius: 0.5rem;
   
-  /* Custom PwC-inspired cybersecurity theme */
-  --pwc-orange: hsl(24, 100%, 51%);
-  --pwc-blue: hsl(210, 100%, 20%);
-  --dark-bg: hsl(222, 47%, 11%);
-  --card-bg: hsl(222, 47%, 18%);
-  --border-gray: hsl(215, 16%, 32%);
-  --threat-critical: hsl(0, 84%, 60%);
-  --threat-high: hsl(45, 100%, 51%);
-  --threat-medium: hsl(60, 100%, 51%);
-  --threat-low: hsl(120, 100%, 40%);
+  /* Official PwC Brand Colors */
+  --pwc-pink: hsl(324, 74%, 64%);        /* #E669A2 - Passion */
+  --pwc-yellow: hsl(45, 88%, 56%);       /* #F3BE26 - Creativity */
+  --pwc-light-orange: hsl(36, 82%, 51%); /* #E88D14 - Success */
+  --pwc-dark-orange: hsl(20, 78%, 48%);  /* #DB4E18 - Brand color */
+  --pwc-red: hsl(10, 98%, 34%);          /* #AD1B02 - Strength */
+  --pwc-black: hsl(0, 0%, 0%);           /* #000000 - Security */
+  
+  /* Cybersecurity theme adaptations */
+  --threat-critical: hsl(10, 98%, 34%);   /* PwC Red */
+  --threat-high: hsl(20, 78%, 48%);       /* PwC Dark Orange */
+  --threat-medium: hsl(36, 82%, 51%);     /* PwC Light Orange */
+  --threat-low: hsl(45, 88%, 56%);        /* PwC Yellow */
+  --success-color: hsl(324, 74%, 64%);    /* PwC Pink for success states */
 }
 
 .dark {
@@ -47,7 +51,7 @@
   --card-foreground: hsl(210, 40%, 98%);
   --border: hsl(215, 16%, 32%);
   --input: hsl(215, 16%, 32%);
-  --primary: hsl(24, 100%, 51%);
+  --primary: hsl(324, 74%, 64%);
   --primary-foreground: hsl(222, 84%, 4.9%);
   --secondary: hsl(222, 47%, 18%);
   --secondary-foreground: hsl(210, 40%, 98%);
@@ -56,6 +60,30 @@
   --destructive: hsl(0, 62.8%, 30.6%);
   --destructive-foreground: hsl(210, 40%, 98%);
   --ring: hsl(212.7, 26.8%, 83.9%);
+}
+
+@layer utilities {
+  /* PwC Brand Color Utilities */
+  .bg-pwc-pink { background-color: var(--pwc-pink); }
+  .bg-pwc-yellow { background-color: var(--pwc-yellow); }
+  .bg-pwc-light-orange { background-color: var(--pwc-light-orange); }
+  .bg-pwc-dark-orange { background-color: var(--pwc-dark-orange); }
+  .bg-pwc-red { background-color: var(--pwc-red); }
+  .bg-pwc-black { background-color: var(--pwc-black); }
+  
+  .text-pwc-pink { color: var(--pwc-pink); }
+  .text-pwc-yellow { color: var(--pwc-yellow); }
+  .text-pwc-light-orange { color: var(--pwc-light-orange); }
+  .text-pwc-dark-orange { color: var(--pwc-dark-orange); }
+  .text-pwc-red { color: var(--pwc-red); }
+  .text-pwc-black { color: var(--pwc-black); }
+  
+  .border-pwc-pink { border-color: var(--pwc-pink); }
+  .border-pwc-yellow { border-color: var(--pwc-yellow); }
+  .border-pwc-light-orange { border-color: var(--pwc-light-orange); }
+  .border-pwc-dark-orange { border-color: var(--pwc-dark-orange); }
+  .border-pwc-red { border-color: var(--pwc-red); }
+  .border-pwc-black { border-color: var(--pwc-black); }
 }
 
 @layer base {
