@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { Search, Settings, RefreshCw } from "lucide-react";
+import { Search, Settings, RefreshCw, Play, Pause, RotateCcw, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 import ThreatGauge from "@/components/ui/threat-gauge";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function AnomalyDetection() {
   const [sensitivity, setSensitivity] = useState({
@@ -14,8 +16,13 @@ export default function AnomalyDetection() {
     call: [65],
     pattern: [75]
   });
+  const [showSettings, setShowSettings] = useState(false);
+  const [isAnalysisRunning, setIsAnalysisRunning] = useState(false);
 
-  const { data: threats, isLoading } = useQuery({
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: threats, isLoading, refetch: refetchThreats } = useQuery({
     queryKey: ["/api/threats"],
     refetchInterval: 10000,
   });
@@ -23,6 +30,89 @@ export default function AnomalyDetection() {
   const { data: systemStatus } = useQuery({
     queryKey: ["/api/system-config"],
   });
+
+  // Save sensitivity settings
+  const saveSensitivityMutation = useMutation({
+    mutationFn: async (settings: any) => {
+      return apiRequest("/api/system-config", {
+        method: "POST",
+        body: JSON.stringify({
+          sms_sensitivity: settings.sms[0],
+          call_sensitivity: settings.call[0],
+          pattern_sensitivity: settings.pattern[0]
+        })
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Settings saved",
+        description: "Detection sensitivity settings have been updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/system-config"] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to save sensitivity settings. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Manual analysis trigger
+  const runAnalysisMutation = useMutation({
+    mutationFn: async () => {
+      setIsAnalysisRunning(true);
+      return apiRequest("/api/threats/analyze", {
+        method: "POST",
+        body: JSON.stringify({ triggerType: "manual" })
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Analysis started",
+        description: "AI threat analysis is now running on latest data.",
+      });
+      setTimeout(() => {
+        refetchThreats();
+        queryClient.invalidateQueries({ queryKey: ["/api/threats"] });
+        setIsAnalysisRunning(false);
+      }, 3000);
+    },
+    onError: () => {
+      toast({
+        title: "Analysis failed",
+        description: "Could not start threat analysis. Please check system status.",
+        variant: "destructive",
+      });
+      setIsAnalysisRunning(false);
+    }
+  });
+
+  const handleSaveSettings = () => {
+    saveSensitivityMutation.mutate(sensitivity);
+  };
+
+  const handleRunAnalysis = () => {
+    runAnalysisMutation.mutate();
+  };
+
+  const handleResetSettings = () => {
+    setSensitivity({
+      sms: [80],
+      call: [65],
+      pattern: [75]
+    });
+    toast({
+      title: "Settings reset",
+      description: "Detection sensitivity has been reset to default values.",
+    });
+  };
+
+  const handleViewAllThreats = () => {
+    // Navigate to main dashboard or show all threats
+    window.location.href = "/";
+  };
 
   const anomalyTypes = [
     {
@@ -71,13 +161,24 @@ export default function AnomalyDetection() {
             <p className="text-gray-400">AI-powered analysis of CDR and SMS data using Gemini</p>
           </div>
           <div className="flex items-center space-x-4">
-            <Button className="pwc-button-secondary">
+            <Button 
+              className="pwc-button-secondary" 
+              onClick={() => setShowSettings(!showSettings)}
+            >
               <Settings className="mr-2" size={16} />
-              Configure
+              {showSettings ? 'Hide Settings' : 'Configure'}
             </Button>
-            <Button className="pwc-button-primary">
-              <RefreshCw className="mr-2" size={16} />
-              Run Analysis
+            <Button 
+              className="pwc-button-primary" 
+              onClick={handleRunAnalysis}
+              disabled={isAnalysisRunning || runAnalysisMutation.isPending}
+            >
+              {isAnalysisRunning ? (
+                <RefreshCw className="mr-2 animate-spin" size={16} />
+              ) : (
+                <RefreshCw className="mr-2" size={16} />
+              )}
+              {isAnalysisRunning ? 'Analyzing...' : 'Run Analysis'}
             </Button>
           </div>
         </div>
@@ -121,19 +222,43 @@ export default function AnomalyDetection() {
           ))}
         </div>
 
-        {/* Sensitivity Controls */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Sensitivity Controls - Show/Hide based on settings toggle */}
+        {showSettings && (
           <Card className="pwc-card">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-white">Detection Sensitivity</CardTitle>
-              <p className="text-sm text-gray-400">Adjust AI analysis thresholds</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg font-semibold text-white">Detection Settings</CardTitle>
+                  <p className="text-sm text-gray-400">Configure AI analysis sensitivity and save changes</p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={handleResetSettings}
+                    className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                  >
+                    <RotateCcw className="mr-2" size={14} />
+                    Reset
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    className="pwc-button-primary"
+                    onClick={handleSaveSettings}
+                    disabled={saveSensitivityMutation.isPending}
+                  >
+                    <Save className="mr-2" size={14} />
+                    {saveSensitivityMutation.isPending ? 'Saving...' : 'Save'}
+                  </Button>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <Label className="text-sm font-medium text-gray-300">SMS Phishing Detection</Label>
                   <span className="text-sm text-orange-400">
-                    {sensitivity.sms[0] > 70 ? "High" : sensitivity.sms[0] > 40 ? "Medium" : "Low"}
+                    {sensitivity.sms[0] > 70 ? "High" : sensitivity.sms[0] > 40 ? "Medium" : "Low"} ({sensitivity.sms[0]}%)
                   </span>
                 </div>
                 <Slider
@@ -144,8 +269,8 @@ export default function AnomalyDetection() {
                   className="w-full"
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>Conservative</span>
-                  <span>Aggressive</span>
+                  <span>Conservative (fewer alerts)</span>
+                  <span>Aggressive (more alerts)</span>
                 </div>
               </div>
 
@@ -153,7 +278,7 @@ export default function AnomalyDetection() {
                 <div className="flex justify-between items-center mb-2">
                   <Label className="text-sm font-medium text-gray-300">Call Pattern Analysis</Label>
                   <span className="text-sm text-orange-400">
-                    {sensitivity.call[0] > 70 ? "High" : sensitivity.call[0] > 40 ? "Medium" : "Low"}
+                    {sensitivity.call[0] > 70 ? "High" : sensitivity.call[0] > 40 ? "Medium" : "Low"} ({sensitivity.call[0]}%)
                   </span>
                 </div>
                 <Slider
@@ -164,8 +289,8 @@ export default function AnomalyDetection() {
                   className="w-full"
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>Conservative</span>
-                  <span>Aggressive</span>
+                  <span>Conservative (fewer alerts)</span>
+                  <span>Aggressive (more alerts)</span>
                 </div>
               </div>
 
@@ -173,7 +298,7 @@ export default function AnomalyDetection() {
                 <div className="flex justify-between items-center mb-2">
                   <Label className="text-sm font-medium text-gray-300">Behavioral Analysis</Label>
                   <span className="text-sm text-orange-400">
-                    {sensitivity.pattern[0] > 70 ? "High" : sensitivity.pattern[0] > 40 ? "Medium" : "Low"}
+                    {sensitivity.pattern[0] > 70 ? "High" : sensitivity.pattern[0] > 40 ? "Medium" : "Low"} ({sensitivity.pattern[0]}%)
                   </span>
                 </div>
                 <Slider
@@ -184,12 +309,16 @@ export default function AnomalyDetection() {
                   className="w-full"
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>Conservative</span>
-                  <span>Aggressive</span>
+                  <span>Conservative (fewer alerts)</span>
+                  <span>Aggressive (more alerts)</span>
                 </div>
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* System Status */}
+        <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
 
           <Card className="pwc-card">
             <CardHeader>
@@ -254,7 +383,11 @@ export default function AnomalyDetection() {
                 <CardTitle className="text-lg font-semibold text-white">Recent Anomalies</CardTitle>
                 <p className="text-sm text-gray-400">Latest detected anomalies from AI analysis</p>
               </div>
-              <Button size="sm" className="pwc-button-secondary">
+              <Button 
+                size="sm" 
+                className="pwc-button-secondary"
+                onClick={handleViewAllThreats}
+              >
                 <Search className="mr-2" size={16} />
                 View All
               </Button>

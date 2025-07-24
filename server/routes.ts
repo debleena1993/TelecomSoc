@@ -73,6 +73,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Manual threat analysis trigger
+  app.post("/api/threats/analyze", async (req, res) => {
+    try {
+      const { triggerType = "manual" } = req.body;
+      
+      // Run immediate threat analysis
+      console.log(`Manual threat analysis triggered: ${triggerType}`);
+      await threatAnalysisService.runAnalysis();
+      
+      res.json({ 
+        success: true, 
+        message: "Threat analysis started successfully",
+        triggerType 
+      });
+    } catch (error) {
+      console.error("Failed to trigger threat analysis:", error);
+      res.status(500).json({ error: "Failed to start threat analysis" });
+    }
+  });
+
   app.patch("/api/threats/:id/status", async (req, res) => {
     try {
       const { status } = req.body;
