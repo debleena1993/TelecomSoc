@@ -28,7 +28,7 @@ export default function Sidebar() {
             <Shield className="text-white text-xl" size={24} />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-white">TelecomSOC</h1>
+            <h1 className="text-lg font-bold sidebar-heading">TelecomSOC</h1>
             <p className="text-sm text-gray-400">AI Security Platform</p>
           </div>
         </div>
@@ -36,7 +36,7 @@ export default function Sidebar() {
       
       <nav className="mt-6">
         <div className="px-4">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Dashboard</p>
+          <p className="text-xs font-semibold sidebar-heading uppercase tracking-wider mb-3">Dashboard</p>
           <ul className="space-y-2">
             {navigation.map((item) => {
               const isActive = location === item.href;
@@ -45,10 +45,8 @@ export default function Sidebar() {
                   <Link
                     href={item.href}
                     className={cn(
-                      "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                      isActive
-                        ? "text-white pwc-button-primary"
-                        : "text-gray-300 hover:bg-slate-700"
+                      "sidebar-link",
+                      isActive && "active"
                     )}
                   >
                     <item.icon className="mr-3" size={18} />
@@ -61,7 +59,7 @@ export default function Sidebar() {
         </div>
         
         <div className="px-4 mt-8">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">System Status</p>
+          <p className="text-xs font-semibold sidebar-heading uppercase tracking-wider mb-3">System Status</p>
           <div className="space-y-3">
             {systemStatus.map((system) => (
               <div key={system.name} className="flex items-center justify-between">

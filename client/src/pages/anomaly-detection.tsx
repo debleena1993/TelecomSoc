@@ -166,7 +166,7 @@ export default function AnomalyDetection() {
       <header className="pwc-card border-b p-6 m-0 rounded-none">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-white">Anomaly & Threat Detection</h2>
+            <h2 className="text-2xl font-bold sidebar-heading">Anomaly & Threat Detection</h2>
             <p className="text-gray-400">AI-powered analysis of CDR and SMS data using Gemini</p>
           </div>
           <div className="flex items-center space-x-4">
@@ -201,7 +201,7 @@ export default function AnomalyDetection() {
             <Card key={index} className="pwc-card">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-white">{engine.type}</CardTitle>
+                  <CardTitle className="text-sm font-medium sidebar-heading">{engine.type}</CardTitle>
                   <Badge className={`text-xs ${
                     engine.status === "active" 
                       ? "bg-pwc-china-pink/20 text-pwc-china-pink" 
@@ -238,7 +238,7 @@ export default function AnomalyDetection() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-lg font-semibold text-white">Detection Settings</CardTitle>
+                  <CardTitle className="text-lg font-semibold sidebar-heading">Detection Settings</CardTitle>
                   <p className="text-sm text-gray-400">Configure AI analysis sensitivity and save changes</p>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -332,7 +332,7 @@ export default function AnomalyDetection() {
 
           <Card className="pwc-card">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-white">Gemini AI Status</CardTitle>
+              <CardTitle className="text-lg font-semibold sidebar-heading">Gemini AI Status</CardTitle>
               <p className="text-sm text-gray-400">AI analysis engine performance</p>
             </CardHeader>
             <CardContent>
@@ -390,7 +390,7 @@ export default function AnomalyDetection() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg font-semibold text-white">Recent Anomalies</CardTitle>
+                <CardTitle className="text-lg font-semibold sidebar-heading">Recent Anomalies</CardTitle>
                 <p className="text-sm text-gray-400">Latest detected anomalies from AI analysis</p>
               </div>
               <Button 
