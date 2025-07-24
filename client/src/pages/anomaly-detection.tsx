@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Settings, RefreshCw } from "lucide-react";
+import { Search, Settings, RefreshCw, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

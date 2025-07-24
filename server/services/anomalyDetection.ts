@@ -169,32 +169,37 @@ Consider the sensitivity settings when determining severity levels.
         .filter((a: any) => a.activityType === 'call' && a.durationSec > 0)
         .map((a: any) => a.durationSec);
 
-      if (callDurations.length > 0) {
+      if (callDurations.length > 10) {
         const mean = callDurations.reduce((a: number, b: number) => a + b, 0) / callDurations.length;
-        const stdDev = Math.sqrt(
-          callDurations.reduce((sum: number, val: number) => sum + Math.pow(val - mean, 2), 0) / callDurations.length
-        );
+        const variance = callDurations.reduce((sum: number, val: number) => sum + Math.pow(val - mean, 2), 0) / callDurations.length;
+        const stdDev = Math.sqrt(variance);
 
         // Find outliers (more than 2 standard deviations from mean)
-        const outliers = activities.filter((a: any) => 
-          a.activityType === 'call' && 
-          Math.abs(a.durationSec - mean) > 2 * stdDev
-        );
+        const outliers = activities
+          .filter((a: any) => 
+            a.activityType === 'call' && 
+            a.durationSec > 0 &&
+            Math.abs(a.durationSec - mean) > 2 * stdDev
+          )
+          .slice(0, 5); // Limit to prevent too many anomalies
 
         outliers.forEach((outlier: any, index: number) => {
+          const zScore = Math.abs(outlier.durationSec - mean) / stdDev;
           anomalies.push({
             id: `stat_call_${outlier.id}_${index}`,
             timestamp: outlier.timestamp,
             anomalyType: "call_duration_outlier",
-            severity: Math.abs(outlier.durationSec - mean) > 3 * stdDev ? 'high' : 'medium',
-            score: Math.min(10, Math.abs(outlier.durationSec - mean) / stdDev),
-            description: `Unusual call duration: ${outlier.durationSec}s (avg: ${mean.toFixed(1)}s)`,
+            severity: zScore > 3 ? 'critical' : zScore > 2.5 ? 'high' : 'medium',
+            score: Math.min(10, zScore),
+            description: `Unusual call duration: ${outlier.durationSec}s (expected: ${mean.toFixed(1)}±${stdDev.toFixed(1)}s)`,
             affectedMetrics: ["call_duration"],
-            confidence: 0.85,
+            confidence: Math.min(0.95, 0.6 + (zScore - 2) * 0.1),
             source: `user_${outlier.userId}`,
             details: {
               actual_duration: outlier.durationSec,
-              expected_range: `${(mean - 2 * stdDev).toFixed(1)}-${(mean + 2 * stdDev).toFixed(1)}s`,
+              expected_mean: mean.toFixed(1),
+              standard_deviation: stdDev.toFixed(1),
+              z_score: zScore.toFixed(2),
               peer_number: outlier.peerNumber
             }
           });
@@ -208,27 +213,54 @@ Consider the sensitivity settings when determining severity levels.
       }, {} as Record<string, number>);
 
       const locationFreqs = Object.values(locationCounts);
-      if (locationFreqs.length > 5) {
+      if (locationFreqs.length > 3) {
         const avgFreq = locationFreqs.reduce((a: number, b: number) => a + b, 0) / locationFreqs.length;
+        const variance = locationFreqs.reduce((sum: number, val: number) => sum + Math.pow(val - avgFreq, 2), 0) / locationFreqs.length;
+        const stdDev = Math.sqrt(variance);
         
         Object.entries(locationCounts).forEach(([location, count]: [string, number]) => {
-          if (count > avgFreq * 3) { // Location with 3x average activity
+          const zScore = Math.abs(count - avgFreq) / stdDev;
+          if (zScore > 2 && count > avgFreq * 2) { // Significant spike
             anomalies.push({
-              id: `stat_location_${location.replace(/\s+/g, '_')}`,
+              id: `stat_location_${location.replace(/\s+/g, '_')}_${Date.now()}`,
               timestamp: new Date(),
               anomalyType: "location_activity_spike",
-              severity: count > avgFreq * 5 ? 'critical' : 'high',
-              score: Math.min(10, count / avgFreq),
-              description: `Unusual activity spike in ${location}: ${count} activities (avg: ${avgFreq.toFixed(1)})`,
+              severity: zScore > 3 ? 'critical' : count > avgFreq * 4 ? 'high' : 'medium',
+              score: Math.min(10, zScore),
+              description: `Activity spike in ${location}: ${count} events (${(count/avgFreq).toFixed(1)}x average)`,
               affectedMetrics: ["location_frequency"],
-              confidence: 0.75,
+              confidence: Math.min(0.9, 0.5 + zScore * 0.1),
               source: location,
               details: {
                 activity_count: count,
-                average_count: avgFreq,
-                spike_ratio: count / avgFreq
+                average_count: avgFreq.toFixed(1),
+                spike_ratio: (count / avgFreq).toFixed(2),
+                z_score: zScore.toFixed(2)
               }
             });
+          }
+        });
+      }
+
+      // Analyze fraud patterns
+      const fraudCount = activities.filter((a: any) => a.isSpamOrFraud).length;
+      const fraudRate = fraudCount / activities.length;
+      
+      if (fraudRate > 0.1) { // More than 10% fraud rate
+        anomalies.push({
+          id: `fraud_rate_spike_${Date.now()}`,
+          timestamp: new Date(),
+          anomalyType: "fraud_rate_spike",
+          severity: fraudRate > 0.2 ? 'critical' : fraudRate > 0.15 ? 'high' : 'medium',
+          score: Math.min(10, fraudRate * 50),
+          description: `High fraud detection rate: ${(fraudRate * 100).toFixed(1)}% of activities flagged`,
+          affectedMetrics: ["fraud_rate", "security_score"],
+          confidence: 0.9,
+          source: "fraud_detection_system",
+          details: {
+            fraud_count: fraudCount,
+            total_activities: activities.length,
+            fraud_percentage: (fraudRate * 100).toFixed(2)
           }
         });
       }
