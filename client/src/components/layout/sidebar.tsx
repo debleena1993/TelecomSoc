@@ -42,18 +42,17 @@ export default function Sidebar() {
               const isActive = location === item.href;
               return (
                 <li key={item.name}>
-                  <Link href={item.href}>
-                    <a
-                      className={cn(
-                        "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                        isActive
-                          ? "text-white pwc-button-primary"
-                          : "text-gray-300 hover:bg-slate-700"
-                      )}
-                    >
-                      <item.icon className="mr-3" size={18} />
-                      {item.name}
-                    </a>
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                      isActive
+                        ? "text-white pwc-button-primary"
+                        : "text-gray-300 hover:bg-slate-700"
+                    )}
+                  >
+                    <item.icon className="mr-3" size={18} />
+                    {item.name}
                   </Link>
                 </li>
               );

@@ -49,7 +49,7 @@ export class DatabaseConnection {
         database,
         username,
         password,
-        ssl: process.env.NODE_ENV === 'production',
+        ssl: process.env.NODE_ENV === 'production' || process.env.DATABASE_URL?.includes('sslmode=require'),
         max: 20,
         idle_timeout: 30,
         connect_timeout: 30,
@@ -65,7 +65,7 @@ export class DatabaseConnection {
         database: url.pathname.slice(1), // Remove leading slash
         username: url.username,
         password: url.password,
-        ssl: process.env.NODE_ENV === 'production',
+        ssl: process.env.NODE_ENV === 'production' || process.env.DATABASE_URL?.includes('sslmode=require'),
         max: 20,
         idle_timeout: 30,
         connect_timeout: 30,
@@ -77,22 +77,28 @@ export class DatabaseConnection {
 
   private initializeConnection(): void {
     try {
-      // Create connection using individual parameters
-      if (this.config.host) {
+      // Create connection using DATABASE_URL directly if available (preferred for Replit)
+      if (process.env.DATABASE_URL) {
+        // Use DATABASE_URL with proper SSL configuration
+        this.client = postgres(process.env.DATABASE_URL, { 
+          ssl: process.env.DATABASE_URL.includes('sslmode=require') ? 'require' : false,
+          max: 20,
+          idle_timeout: 30,
+          connect_timeout: 30,
+        });
+      } else if (this.config.host) {
+        // Fallback to individual parameters
         this.client = postgres({
           host: this.config.host,
           port: this.config.port,
           database: this.config.database,
           username: this.config.username,
           password: this.config.password,
-          ssl: false,
+          ssl: this.config.ssl ? 'require' : false,
           max: this.config.max,
           idle_timeout: this.config.idle_timeout,
           connect_timeout: this.config.connect_timeout,
         });
-      } else if (process.env.DATABASE_URL) {
-        // Fallback to DATABASE_URL with SSL requirement
-        this.client = postgres(process.env.DATABASE_URL, { ssl: false });
       } else {
         throw new Error('No database connection configuration available');
       }
