@@ -171,7 +171,7 @@ export default function AnomalyDetection() {
           </div>
           <div className="flex items-center space-x-4">
             <Button 
-              className="border-pwc-yellow/30 text-pwc-yellow hover:bg-pwc-yellow/10" 
+              className="border-pwc-orange-yellow/30 text-pwc-orange-yellow hover:bg-pwc-orange-yellow/10" 
               variant="outline"
               onClick={() => setShowSettings(!showSettings)}
             >
@@ -179,7 +179,7 @@ export default function AnomalyDetection() {
               {showSettings ? 'Hide Settings' : 'Configure'}
             </Button>
             <Button 
-              className="bg-pwc-pink hover:bg-pwc-pink/80 text-white" 
+              className="bg-pwc-china-pink hover:bg-pwc-china-pink/80 text-white" 
               onClick={handleRunAnalysis}
               disabled={isAnalysisRunning || runAnalysisMutation.isPending}
             >
@@ -204,8 +204,8 @@ export default function AnomalyDetection() {
                   <CardTitle className="text-sm font-medium text-white">{engine.type}</CardTitle>
                   <Badge className={`text-xs ${
                     engine.status === "active" 
-                      ? "bg-pwc-pink/20 text-pwc-pink" 
-                      : "bg-pwc-yellow/20 text-pwc-yellow"
+                      ? "bg-pwc-china-pink/20 text-pwc-china-pink" 
+                      : "bg-pwc-orange-yellow/20 text-pwc-orange-yellow"
                   }`}>
                     {engine.status}
                   </Badge>
@@ -220,7 +220,7 @@ export default function AnomalyDetection() {
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-400">Anomalies:</span>
-                    <span className="text-pwc-red">{engine.anomalies}</span>
+                    <span className="text-pwc-rufous">{engine.anomalies}</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-400">Last Run:</span>
@@ -246,14 +246,14 @@ export default function AnomalyDetection() {
                     size="sm" 
                     variant="outline" 
                     onClick={handleResetSettings}
-                    className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                    className="border-pwc-beer/30 text-pwc-beer hover:bg-pwc-beer/10"
                   >
                     <RotateCcw className="mr-2" size={14} />
                     Reset
                   </Button>
                   <Button 
                     size="sm" 
-                    className="pwc-button-primary"
+                    className="bg-pwc-tenne hover:bg-pwc-tenne/80 text-white"
                     onClick={handleSaveSettings}
                     disabled={saveSensitivityMutation.isPending}
                   >
@@ -395,7 +395,7 @@ export default function AnomalyDetection() {
               </div>
               <Button 
                 size="sm" 
-                className="border-pwc-pink/30 text-pwc-pink hover:bg-pwc-pink/10 hover:text-pwc-pink"
+                className="border-pwc-china-pink/30 text-pwc-china-pink hover:bg-pwc-china-pink/10 hover:text-pwc-china-pink"
                 variant="outline"
                 onClick={handleViewAllThreats}
               >
@@ -431,10 +431,10 @@ export default function AnomalyDetection() {
                     </div>
                     <div className="text-right">
                       <Badge className={`text-xs mb-1 ${
-                        threat.severity === "critical" ? "bg-pwc-red/20 text-pwc-red" :
-                        threat.severity === "high" ? "bg-pwc-dark-orange/20 text-pwc-dark-orange" :
-                        threat.severity === "medium" ? "bg-pwc-light-orange/20 text-pwc-light-orange" :
-                        "bg-pwc-yellow/20 text-pwc-yellow"
+                        threat.severity === "critical" ? "bg-pwc-rufous/20 text-pwc-rufous" :
+                        threat.severity === "high" ? "bg-pwc-tenne/20 text-pwc-tenne" :
+                        threat.severity === "medium" ? "bg-pwc-beer/20 text-pwc-beer" :
+                        "bg-pwc-orange-yellow/20 text-pwc-orange-yellow"
                       }`}>
                         {threat.severity || 'low'}
                       </Badge>
