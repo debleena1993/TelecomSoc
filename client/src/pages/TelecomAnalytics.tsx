@@ -108,9 +108,9 @@ export default function TelecomAnalytics() {
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalActivities.toLocaleString()}</div>
+                <div className="text-2xl font-bold">{stats?.totalActivities?.toLocaleString() || '0'}</div>
                 <p className="text-xs text-muted-foreground">
-                  {stats.callCount} calls • {stats.smsCount} SMS
+                  {stats?.callCount || 0} calls • {stats?.smsCount || 0} SMS
                 </p>
               </CardContent>
             </Card>
@@ -121,9 +121,9 @@ export default function TelecomAnalytics() {
                 <AlertTriangle className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-red-600">{stats.fraudRate}%</div>
+                <div className="text-2xl font-bold text-red-600">{stats?.fraudRate || 0}%</div>
                 <p className="text-xs text-muted-foreground">
-                  {stats.fraudCount} fraud incidents detected
+                  {stats?.fraudCount || 0} fraud incidents detected
                 </p>
               </CardContent>
             </Card>
@@ -150,10 +150,10 @@ export default function TelecomAnalytics() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {stats.topLocations[0]?.location || "N/A"}
+                  {stats?.topLocations?.[0]?.location || "N/A"}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {stats.topLocations[0]?.count || 0} activities
+                  {stats?.topLocations?.[0]?.count || 0} activities
                 </p>
               </CardContent>
             </Card>
@@ -171,7 +171,7 @@ export default function TelecomAnalytics() {
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={stats.topLocations}>
+                  <BarChart data={stats?.topLocations || []}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="location" />
                     <YAxis />

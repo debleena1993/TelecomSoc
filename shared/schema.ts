@@ -118,10 +118,9 @@ export type InsertSystemConfig = z.infer<typeof insertSystemConfigSchema>;
 export type TelecomUserActivityLog = typeof telecomUserActivityLog.$inferSelect;
 export type InsertTelecomUserActivityLog = z.infer<typeof insertTelecomUserActivityLogSchema>;
 
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
-
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-});

@@ -16,7 +16,7 @@ const db = drizzle(sql);
 async function importCSV() {
   try {
     console.log("Reading CSV file...");
-    const csvContent = fs.readFileSync("attached_assets/jio_user_incoming_calls_sms_2000_1753289375252.csv", "utf-8");
+    const csvContent = fs.readFileSync("../attached_assets/jio_user_incoming_calls_sms_2000_1753289375252.csv", "utf-8");
     
     console.log("Parsing CSV data...");
     const records = parse(csvContent, {

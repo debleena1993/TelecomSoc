@@ -399,23 +399,19 @@ class DatabaseStorage implements IStorage {
     let query = this.db.select().from(telecomUserActivityLog);
     
     if (userId) {
-      console.log("userId====",userId);
       query = query.where(eq(telecomUserActivityLog.userId, userId));
     }
-    // Convert to SQL string before executing
-    const { sql, params } = query
-      .orderBy(desc(telecomUserActivityLog.timestamp))
-      .limit(limit)
-      .offset(offset)
-      .toSQL();
-
-    console.log("🪄 Raw SQL:", sql);
-    const results = await query
-      .orderBy(desc(telecomUserActivityLog.timestamp))
-      .limit(limit)
-      .offset(offset);
-    
-    return results;
+    try {
+      const results = await query
+        .orderBy(desc(telecomUserActivityLog.timestamp))
+        .limit(limit)
+        .offset(offset);
+      
+      return results;
+    } catch (error) {
+      console.error('Error fetching telecom activities:', error);
+      return [];
+    }
   }
 
   async getTelecomFraudActivities(userId?: string): Promise<TelecomUserActivityLog[]> {
@@ -510,7 +506,21 @@ class DatabaseStorage implements IStorage {
       basicStatsQuery.where(whereCondition);
     }
 
-    const basicStats = await basicStatsQuery;
+    let basicStats;
+    try {
+      basicStats = await basicStatsQuery;
+    } catch (error) {
+      console.error('Error fetching basic stats:', error);
+      return {
+        totalActivities: 0,
+        callCount: 0,
+        smsCount: 0,
+        fraudCount: 0,
+        fraudRate: 0,
+        topLocations: [],
+        networkUsage: []
+      };
+    }
     const stats = basicStats[0];
 
     // Get top locations

@@ -49,7 +49,7 @@ export class DatabaseConnection {
         database,
         username,
         password,
-        ssl: process.env.NODE_ENV === 'production',
+        ssl: true,
         max: 20,
         idle_timeout: 30,
         connect_timeout: 30,
@@ -65,7 +65,7 @@ export class DatabaseConnection {
         database: url.pathname.slice(1), // Remove leading slash
         username: url.username,
         password: url.password,
-        ssl: process.env.NODE_ENV === 'production',
+        ssl: true,
         max: 20,
         idle_timeout: 30,
         connect_timeout: 30,
@@ -85,14 +85,14 @@ export class DatabaseConnection {
           database: this.config.database,
           username: this.config.username,
           password: this.config.password,
-          ssl: false,
+          ssl: 'require',
           max: this.config.max,
           idle_timeout: this.config.idle_timeout,
           connect_timeout: this.config.connect_timeout,
         });
       } else if (process.env.DATABASE_URL) {
         // Fallback to DATABASE_URL with SSL requirement
-        this.client = postgres(process.env.DATABASE_URL, { ssl: false });
+        this.client = postgres(process.env.DATABASE_URL, { ssl: 'require' });
       } else {
         throw new Error('No database connection configuration available');
       }
