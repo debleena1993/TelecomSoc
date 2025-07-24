@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { Shield, Gauge, Search, ShieldQuestion, FileText, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
+import pwcLogo from "@assets/image_1753346439549.png";
 
 const navigation = [
   { name: "Real-Time Threats", href: "/", icon: Gauge },
@@ -20,7 +21,7 @@ export default function Sidebar() {
         <div className="flex items-center space-x-3 mb-4">
           {/* PWC Logo */}
           <div className="w-16 h-12 flex items-center justify-center">
-            <img src="/attached_assets/image_1753346439549.png" alt="PwC Logo" className="h-8 w-auto" />
+            <img src={pwcLogo} alt="PwC Logo" className="h-8 w-auto" />
           </div>
         </div>
         <div className="flex items-center space-x-3">
