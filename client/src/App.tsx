@@ -6,7 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import AnomalyDetection from "@/pages/anomaly-detection";
-import AutoResponse from "@/pages/auto-response";
 import FraudDetection from "@/pages/fraud-detection";
 import ComplianceReports from "@/pages/compliance-reports";
 import TelecomAnalytics from "@/pages/TelecomAnalytics";
@@ -21,7 +20,6 @@ function Router() {
         <Switch>
           <Route path="/" component={TelecomAnalytics} />
           <Route path="/anomaly-detection" component={AnomalyDetection} />
-          <Route path="/auto-response" component={AutoResponse} />
           <Route path="/fraud-detection" component={FraudDetection} />
           {/* <Route path="/compliance-reports" component={ComplianceReports} />
            */}

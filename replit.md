@@ -119,14 +119,20 @@ The system is designed for scalability, with clear separation between data inges
 
 ## Recent Changes
 
-**July 23, 2025:**
-- Successfully migrated TelecomSOC platform from Replit Agent to Replit environment
-- Added new `telecom_user_activity_log` table to database schema for user activity tracking
-- Imported 2000 CSV records of Jio user incoming calls and SMS data
-- Fixed client-server separation and security best practices
-- Verified all core functionality working with real-time threat detection
-
-## Recent Changes
+**July 24, 2025:**
+- Successfully completed user-requested UI/UX improvements:
+  - Removed auto-response page completely from navigation and routes
+  - Fixed anomaly detection page: Configure and Run Analysis buttons now functional
+  - Updated sidebar with white background and PWC logo while maintaining button colors
+  - Replaced auto-reload with manual refresh button for real-time data
+  - Removed system status section from sidebar as requested
+  - Fixed "View All" functionality in anomaly detection to navigate to main threats view
+- All core functionalities verified working:
+  - Real-time threat monitoring with 2000+ imported telecom records
+  - Anomaly detection with functional configuration and analysis
+  - Fraud detection showing 331 fraud incidents from real data
+  - Manual refresh functionality for all data endpoints
+  - System configuration updates working properly
 
 **July 23, 2025:**
 - Successfully migrated TelecomSOC platform from Replit Agent to Replit environment

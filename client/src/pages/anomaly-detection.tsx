@@ -7,6 +7,8 @@ import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
 import ThreatGauge from "@/components/ui/threat-gauge";
+import { queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AnomalyDetection() {
   const [sensitivity, setSensitivity] = useState({
@@ -14,15 +16,78 @@ export default function AnomalyDetection() {
     call: [65],
     pattern: [75]
   });
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const { toast } = useToast();
 
   const { data: threats, isLoading } = useQuery({
     queryKey: ["/api/threats"],
-    refetchInterval: 10000,
   });
 
   const { data: systemStatus } = useQuery({
     queryKey: ["/api/system-config"],
   });
+
+  // Configure sensitivity settings
+  const handleConfigure = async () => {
+    try {
+      // Update system configuration with new sensitivity values
+      await Promise.all([
+        fetch('/api/system-config/sms_sensitivity', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ value: sensitivity.sms[0] })
+        }),
+        fetch('/api/system-config/call_sensitivity', {
+          method: 'PATCH', 
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ value: sensitivity.call[0] })
+        }),
+        fetch('/api/system-config/fraud_sensitivity', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ value: sensitivity.pattern[0] })
+        })
+      ]);
+      
+      toast({
+        title: "Configuration Updated",
+        description: "Sensitivity settings have been successfully updated",
+      });
+    } catch (error) {
+      toast({
+        title: "Configuration Failed",
+        description: "Failed to update sensitivity settings",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Run analysis
+  const handleRunAnalysis = async () => {
+    setIsAnalyzing(true);
+    try {
+      // Refresh threats data
+      await queryClient.invalidateQueries({ queryKey: ["/api/threats"] });
+      toast({
+        title: "Analysis Complete",
+        description: "Anomaly detection analysis has been refreshed",
+      });
+    } catch (error) {
+      toast({
+        title: "Analysis Failed",
+        description: "Failed to run anomaly analysis",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  // View all anomalies
+  const handleViewAll = () => {
+    // Navigate to full anomalies view
+    window.location.href = '/';
+  };
 
   const anomalyTypes = [
     {
@@ -71,12 +136,19 @@ export default function AnomalyDetection() {
             <p className="text-gray-400">AI-powered analysis of CDR and SMS data using Gemini</p>
           </div>
           <div className="flex items-center space-x-4">
-            <Button className="pwc-button-secondary">
+            <Button 
+              className="pwc-button-secondary"
+              onClick={handleConfigure}
+            >
               <Settings className="mr-2" size={16} />
               Configure
             </Button>
-            <Button className="pwc-button-primary">
-              <RefreshCw className="mr-2" size={16} />
+            <Button 
+              className="pwc-button-primary"
+              onClick={handleRunAnalysis}
+              disabled={isAnalyzing}
+            >
+              <RefreshCw className={`mr-2 ${isAnalyzing ? 'animate-spin' : ''}`} size={16} />
               Run Analysis
             </Button>
           </div>
@@ -254,7 +326,11 @@ export default function AnomalyDetection() {
                 <CardTitle className="text-lg font-semibold text-white">Recent Anomalies</CardTitle>
                 <p className="text-sm text-gray-400">Latest detected anomalies from AI analysis</p>
               </div>
-              <Button size="sm" className="pwc-button-secondary">
+              <Button 
+                size="sm" 
+                className="pwc-button-secondary"
+                onClick={handleViewAll}
+              >
                 <Search className="mr-2" size={16} />
                 View All
               </Button>

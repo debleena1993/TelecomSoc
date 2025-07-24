@@ -1,52 +1,57 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
-import { Phone, MessageCircle, Shield, TrendingUp, MapPin, Wifi, AlertTriangle, Users } from "lucide-react";
+import { Phone, MessageCircle, Shield, TrendingUp, MapPin, Wifi, AlertTriangle, Users, RefreshCw } from "lucide-react";
+import { queryClient } from "@/lib/queryClient";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
 export default function TelecomAnalytics() {
   const [timeRange, setTimeRange] = useState("week");
 
-  // Fetch telecom activity stats
+  // Fetch telecom activity stats (no auto-refresh)
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["/api/telecom/stats", timeRange],
     queryFn: () => 
       fetch(`/api/telecom/stats?timeRange=${timeRange}`)
         .then(res => res.json()),
-    refetchInterval: 10000,
   });
 
-  // Fetch overall risk analysis
+  // Fetch overall risk analysis (no auto-refresh)
   const { data: riskData, isLoading: riskLoading } = useQuery({
     queryKey: ["/api/telecom/overall-risk"],
     queryFn: () => 
       fetch(`/api/telecom/overall-risk`)
         .then(res => res.json()),
-    refetchInterval: 30000,
   });
 
-  // Fetch recent activities
+  // Fetch recent activities (no auto-refresh)
   const { data: activities, isLoading: activitiesLoading } = useQuery({
     queryKey: ["/api/telecom/activities"],
     queryFn: () => 
       fetch(`/api/telecom/activities?limit=10`)
         .then(res => res.json()),
-    refetchInterval: 5000,
   });
 
-  // Fetch fraud activities
+  // Fetch fraud activities (no auto-refresh)
   const { data: fraudActivities, isLoading: fraudLoading } = useQuery({
     queryKey: ["/api/telecom/fraud-activities"],
     queryFn: () => 
       fetch(`/api/telecom/fraud-activities`)
         .then(res => res.json()),
-    refetchInterval: 10000,
   });
+
+  // Manual refresh function
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ["/api/telecom/stats"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/telecom/overall-risk"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/telecom/activities"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/telecom/fraud-activities"] });
+  };
 
   if (statsLoading || riskLoading) {
     return (
@@ -84,6 +89,14 @@ export default function TelecomAnalytics() {
         </div>
         
         <div className="flex gap-4">
+          <Button 
+            onClick={handleRefresh}
+            className="pwc-button-secondary"
+            disabled={statsLoading || riskLoading || activitiesLoading || fraudLoading}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${(statsLoading || riskLoading || activitiesLoading || fraudLoading) ? 'animate-spin' : ''}`} />
+            Refresh Data
+          </Button>
           <Select value={timeRange} onValueChange={setTimeRange}>
             <SelectTrigger className="w-32 bg-muted text-foreground border-muted">
               <SelectValue className="text-foreground font-medium" />
