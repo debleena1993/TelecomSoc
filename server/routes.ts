@@ -4,11 +4,15 @@ import { storage } from "./storage";
 import { threatAnalysisService } from "./services/threatAnalysis";
 import { mockDataGenerator } from "./services/mockData";
 import { fraudAnalysisService } from "./services/fraudAnalysis";
+import { AnomalyDetectionService } from "./services/anomalyDetection.js";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Start mock data generation
   mockDataGenerator.start();
+  
+  // Initialize anomaly detection service
+  const anomalyDetectionService = new AnomalyDetectionService(storage);
 
   // Dashboard routes
   app.get("/api/dashboard/stats", async (req, res) => {
@@ -192,6 +196,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Export endpoints
+  // Anomaly detection endpoints
+  app.get("/api/anomalies", async (req, res) => {
+    try {
+      const config = await storage.getSystemConfig('sms_sensitivity');
+      const smsSensitivity = config?.value || 75;
+      const callConfig = await storage.getSystemConfig('call_sensitivity');
+      const callSensitivity = callConfig?.value || 65;
+      const fraudConfig = await storage.getSystemConfig('fraud_sensitivity');
+      const fraudSensitivity = fraudConfig?.value || 80;
+      
+      const anomalies = await anomalyDetectionService.analyzeAnomalies({
+        sms_sensitivity: smsSensitivity,
+        call_sensitivity: callSensitivity,
+        fraud_sensitivity: fraudSensitivity
+      });
+      
+      res.json(anomalies);
+    } catch (error) {
+      console.error("Error getting anomalies:", error);
+      res.status(500).json({ error: "Failed to get anomalies" });
+    }
+  });
+
+  app.get("/api/anomalies/statistical", async (req, res) => {
+    try {
+      const anomalies = await anomalyDetectionService.getStatisticalAnomalies();
+      res.json(anomalies);
+    } catch (error) {
+      console.error("Error getting statistical anomalies:", error);
+      res.status(500).json({ error: "Failed to get statistical anomalies" });
+    }
+  });
+
+  app.post("/api/anomalies/analyze", async (req, res) => {
+    try {
+      const { sensitivity_config } = req.body;
+      const anomalies = await anomalyDetectionService.analyzeAnomalies(sensitivity_config);
+      res.json({ 
+        success: true, 
+        anomalies,
+        message: "Anomaly analysis completed successfully"
+      });
+    } catch (error) {
+      console.error("Error running anomaly analysis:", error);
+      res.status(500).json({ error: "Failed to run anomaly analysis" });
+    }
+  });
+
   app.get("/api/export/threats", async (req, res) => {
     try {
       const threats = await storage.getThreats(1000);

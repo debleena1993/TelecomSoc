@@ -19,10 +19,8 @@ export default function Sidebar() {
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center space-x-3 mb-4">
           {/* PWC Logo */}
-          <div className="w-12 h-12 flex items-center justify-center">
-            <svg viewBox="0 0 120 40" className="h-8 w-auto">
-              <text x="10" y="25" className="fill-orange-500 text-lg font-bold">PwC</text>
-            </svg>
+          <div className="w-16 h-12 flex items-center justify-center">
+            <img src="/attached_assets/image_1753346439549.png" alt="PwC Logo" className="h-8 w-auto" />
           </div>
         </div>
         <div className="flex items-center space-x-3">

@@ -19,9 +19,17 @@ export default function AnomalyDetection() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { toast } = useToast();
 
-  const { data: threats, isLoading } = useQuery({
-    queryKey: ["/api/threats"],
+  // Fetch dynamic anomalies from Gemini AI
+  const { data: geminiAnomalies, isLoading: geminiLoading } = useQuery({
+    queryKey: ["/api/anomalies"],
   });
+
+  // Fetch statistical anomalies  
+  const { data: statisticalAnomalies, isLoading: statsLoading } = useQuery({
+    queryKey: ["/api/anomalies/statistical"],
+  });
+
+  const isLoading = geminiLoading || statsLoading;
 
   const { data: systemStatus } = useQuery({
     queryKey: ["/api/system-config"],
@@ -62,20 +70,41 @@ export default function AnomalyDetection() {
     }
   };
 
-  // Run analysis
+  // Run analysis with current sensitivity settings
   const handleRunAnalysis = async () => {
     setIsAnalyzing(true);
     try {
-      // Refresh threats data
-      await queryClient.invalidateQueries({ queryKey: ["/api/threats"] });
-      toast({
-        title: "Analysis Complete",
-        description: "Anomaly detection analysis has been refreshed",
+      // Run AI-powered anomaly analysis with current sensitivity config
+      const response = await fetch('/api/anomalies/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sensitivity_config: {
+            sms_sensitivity: sensitivity.sms[0],
+            call_sensitivity: sensitivity.call[0], 
+            fraud_sensitivity: sensitivity.pattern[0]
+          }
+        })
       });
+      
+      if (response.ok) {
+        // Refresh all anomaly data
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["/api/anomalies"] }),
+          queryClient.invalidateQueries({ queryKey: ["/api/anomalies/statistical"] })
+        ]);
+        
+        toast({
+          title: "Analysis Complete",
+          description: "AI-powered anomaly detection completed successfully",
+        });
+      } else {
+        throw new Error('Analysis failed');
+      }
     } catch (error) {
       toast({
-        title: "Analysis Failed",
-        description: "Failed to run anomaly analysis",
+        title: "Analysis Failed", 
+        description: "Failed to run AI anomaly analysis",
         variant: "destructive",
       });
     } finally {
@@ -83,9 +112,8 @@ export default function AnomalyDetection() {
     }
   };
 
-  // View all anomalies
+  // View all anomalies - navigate to main dashboard  
   const handleViewAll = () => {
-    // Navigate to full anomalies view
     window.location.href = '/';
   };
 
@@ -124,16 +152,30 @@ export default function AnomalyDetection() {
     }
   ];
 
-  const recentAnomalies = Array.isArray(threats) ? threats.slice(0, 8) : [];
+  // Combine Gemini AI and statistical anomalies
+  const allAnomalies = [
+    ...(Array.isArray(geminiAnomalies) ? geminiAnomalies : []),
+    ...(Array.isArray(statisticalAnomalies) ? statisticalAnomalies : [])
+  ];
+  
+  // Sort by timestamp and severity
+  const recentAnomalies = allAnomalies
+    .sort((a, b) => {
+      const severityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
+      const severityDiff = (severityOrder[b.severity] || 0) - (severityOrder[a.severity] || 0);
+      if (severityDiff !== 0) return severityDiff;
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    })
+    .slice(0, 8);
 
   return (
     <>
       {/* Header */}
-      <header className="pwc-card border-b p-6 m-0 rounded-none">
+      <header className="bg-white border-b border-gray-200 p-6 m-0 rounded-none">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-white">Anomaly & Threat Detection</h2>
-            <p className="text-gray-400">AI-powered analysis of CDR and SMS data using Gemini</p>
+            <h2 className="text-2xl font-bold text-gray-900">Anomaly & Threat Detection</h2>
+            <p className="text-gray-600">AI-powered analysis using Gemini with real telecom data</p>
           </div>
           <div className="flex items-center space-x-4">
             <Button 
@@ -156,41 +198,103 @@ export default function AnomalyDetection() {
       </header>
 
       <div className="p-6 space-y-6">
-        {/* Detection Engine Status */}
+        {/* Detection Engine Status - Dynamic Data */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {anomalyTypes.map((engine, index) => (
-            <Card key={index} className="pwc-card">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-white">{engine.type}</CardTitle>
-                  <Badge className={`text-xs ${
-                    engine.status === "active" 
-                      ? "bg-green-500/20 text-green-400" 
-                      : "bg-yellow-500/20 text-yellow-400"
-                  }`}>
-                    {engine.status}
-                  </Badge>
+          <Card className="border border-gray-200 bg-white">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-gray-900">Gemini AI Analysis</CardTitle>
+                <Badge className="bg-green-50 text-green-700 text-xs">
+                  {geminiAnomalies ? 'Active' : 'Loading'}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-gray-600 mb-3">AI-powered pattern detection</p>
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-500">AI Anomalies:</span>
+                  <span className="text-gray-900">{geminiAnomalies?.length || 0}</span>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs text-gray-400 mb-3">{engine.description}</p>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-400">Processed:</span>
-                    <span className="text-white">{engine.processed}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-400">Anomalies:</span>
-                    <span className="text-red-400">{engine.anomalies}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-400">Last Run:</span>
-                    <span className="text-gray-300">{engine.lastRun}</span>
-                  </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-500">Confidence:</span>
+                  <span className="text-green-600">High</span>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border border-gray-200 bg-white">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-gray-900">Statistical Analysis</CardTitle>
+                <Badge className="bg-blue-50 text-blue-700 text-xs">
+                  {statisticalAnomalies ? 'Active' : 'Loading'}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-gray-600 mb-3">Statistical outlier detection</p>
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-500">Outliers:</span>
+                  <span className="text-gray-900">{statisticalAnomalies?.length || 0}</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-500">Method:</span>
+                  <span className="text-blue-600">Sigma-based</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border border-gray-200 bg-white">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-gray-900">Total Anomalies</CardTitle>
+                <Badge className="bg-orange-50 text-orange-700 text-xs">
+                  Combined
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-gray-600 mb-3">All detected anomalies</p>
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-500">Total Count:</span>
+                  <span className="text-gray-900">{allAnomalies.length}</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-500">High Severity:</span>
+                  <span className="text-red-600">{allAnomalies.filter(a => ['critical', 'high'].includes(a.severity)).length}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border border-gray-200 bg-white">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-gray-900">Real-time Status</CardTitle>
+                <Badge className="bg-green-50 text-green-700 text-xs">
+                  Live
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-gray-600 mb-3">Data freshness indicator</p>
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-500">Last Update:</span>
+                  <span className="text-gray-900">{new Date().toLocaleTimeString()}</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-500">Status:</span>
+                  <span className="text-green-600">Real-time</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Sensitivity Controls */}

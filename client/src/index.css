@@ -68,10 +68,7 @@
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
-  /* Ensure dark theme by default */
-  html {
-    @apply dark;
-  }
+
 
   html.dark body {
     background-color: var(--dark-bg);
