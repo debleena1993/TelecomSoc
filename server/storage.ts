@@ -267,6 +267,11 @@ export class MemStorage implements IStorage {
     return [];
   }
 
+  async getRecentTelecomActivities(limit?: number): Promise<TelecomUserActivityLog[]> {
+    // Return empty array for MemStorage, will be overridden by database implementation
+    return [];
+  }
+
   async getTelecomFraudActivities(userId?: string): Promise<TelecomUserActivityLog[]> {
     // Return empty array for MemStorage, will be overridden by database implementation
     return [];
@@ -432,6 +437,18 @@ class DatabaseStorage implements IStorage {
     }
     
     return await query.orderBy(desc(telecomUserActivityLog.timestamp));
+  }
+
+  async getRecentTelecomActivities(limit = 50): Promise<TelecomUserActivityLog[]> {
+    if (!this.db) return [];
+    
+    const results = await this.db
+      .select()
+      .from(telecomUserActivityLog)
+      .orderBy(desc(telecomUserActivityLog.timestamp))
+      .limit(limit);
+    
+    return results;
   }
 
   async getTelecomActivityStats(userId?: string, timeRange?: string): Promise<{

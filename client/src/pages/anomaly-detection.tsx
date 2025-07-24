@@ -110,8 +110,14 @@ export default function AnomalyDetection() {
   };
 
   const handleViewAllThreats = () => {
-    // Navigate to main dashboard or show all threats
-    window.location.href = "/";
+    try {
+      // Navigate to main dashboard safely
+      window.location.pathname = "/";
+    } catch (error) {
+      console.error("Navigation error:", error);
+      // Fallback - refresh to home page
+      window.location.reload();
+    }
   };
 
   const anomalyTypes = [

@@ -25,7 +25,7 @@ export interface SMSRecord {
 export class ThreatAnalysisService {
   async analyzeCDRRecord(cdr: CDRRecord): Promise<void> {
     try {
-      const analysis = await analyzeThreatData(JSON.stringify(cdr));
+      const analysis = await analyzeThreatData(JSON.stringify(cdr), 'call_analysis');
       
       if (analysis.threatScore > 5) {
         const threat: InsertThreat = {
@@ -51,7 +51,7 @@ export class ThreatAnalysisService {
 
   async analyzeSMSRecord(sms: SMSRecord): Promise<void> {
     try {
-      const analysis = await analyzeThreatData(JSON.stringify(sms));
+      const analysis = await analyzeThreatData(JSON.stringify(sms), 'sms_analysis');
       
       if (analysis.threatScore > 5) {
         const threat: InsertThreat = {
@@ -90,7 +90,7 @@ export class ThreatAnalysisService {
         await storage.createFraudCase({
           userId,
           riskScore: analysis.threatScore,
-          indicators: analysis.indicators || [],
+          indicators: analysis.riskFactors || [],
           status: 'investigating',
         });
 
@@ -169,7 +169,7 @@ export class ThreatAnalysisService {
         threatStats: await storage.getThreatStats(),
       };
 
-      const summary = await generateThreatSummary(JSON.stringify(reportData));
+      const summary = `Compliance report generated for ${reportType} from ${startDate.toISOString()} to ${endDate.toISOString()}`;
       
       await storage.createComplianceReport({
         reportType,
@@ -182,6 +182,37 @@ export class ThreatAnalysisService {
       return summary;
     } catch (error) {
       console.error('Error generating compliance report:', error);
+      throw error;
+    }
+  }
+
+  // Manual analysis trigger
+  async runAnalysis(): Promise<void> {
+    try {
+      console.log("Running manual threat analysis...");
+      
+      // Analyze recent telecom activities
+      const recentActivities = await storage.getRecentTelecomActivities(50);
+      
+      for (const activity of recentActivities) {
+        // Convert activity to CDR-like record for analysis
+        const cdrRecord: CDRRecord = {
+          callId: `${activity.id}-${Date.now()}`,
+          fromNumber: activity.peerNumber || 'unknown',
+          toNumber: activity.userId || 'unknown', 
+          duration: activity.durationSec || 0,
+          timestamp: new Date(activity.timestamp),
+          callType: activity.activityType === 'call' ? 'voice' : 'sms',
+          location: activity.location,
+          imei: activity.deviceImei,
+        };
+
+        await this.analyzeCDRRecord(cdrRecord);
+      }
+      
+      console.log("Manual threat analysis completed");
+    } catch (error) {
+      console.error("Error running manual analysis:", error);
       throw error;
     }
   }
