@@ -112,10 +112,7 @@ export default function AnomalyDetection() {
     }
   };
 
-  // View all anomalies - navigate to main dashboard  
-  const handleViewAll = () => {
-    window.location.href = '/';
-  };
+
 
   const anomalyTypes = [
     {
@@ -450,14 +447,7 @@ export default function AnomalyDetection() {
                 <CardTitle className="text-lg font-semibold text-gray-900">Recent Anomalies</CardTitle>
                 <p className="text-sm text-gray-600">Latest detected anomalies from AI analysis</p>
               </div>
-              <Button 
-                size="sm" 
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-                onClick={handleViewAll}
-              >
-                <Search className="mr-2" size={16} />
-                View All
-              </Button>
+
             </div>
           </CardHeader>
           <CardContent>

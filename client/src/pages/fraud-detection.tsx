@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Brain, AlertTriangle, Shield, TrendingUp, Eye, Zap, Activity, MapPin, Clock, RefreshCw } from "lucide-react";
+import { Brain, AlertTriangle, Shield, TrendingUp, Eye, Zap, Activity, MapPin, Clock, RefreshCw, FileText, Download } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -73,6 +73,182 @@ export default function FraudDetection() {
     }
   };
 
+  const handleGeneratePDF = async () => {
+    if (!fraudAnalysis) return;
+    
+    try {
+      // Dynamically import jsPDF and html2canvas to avoid SSR issues
+      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+        import('jspdf'),
+        import('html2canvas')
+      ]);
+
+      // Create PDF document
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = 210;
+      const pageHeight = 297;
+      let yPosition = 20;
+
+      // Add header
+      pdf.setFontSize(20);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('TelecomSOC Fraud Detection Report', 20, yPosition);
+      
+      yPosition += 10;
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Generated on: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`, 20, yPosition);
+      
+      yPosition += 15;
+      
+      // Risk Assessment Section
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Risk Assessment', 20, yPosition);
+      yPosition += 10;
+      
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Risk Score: ${fraudAnalysis.riskScore.toFixed(1)}/10`, 20, yPosition);
+      yPosition += 6;
+      pdf.text(`Severity: ${fraudAnalysis.severity.toUpperCase()}`, 20, yPosition);
+      yPosition += 6;
+      pdf.text(`Confidence: ${(fraudAnalysis.confidence * 100).toFixed(0)}%`, 20, yPosition);
+      yPosition += 6;
+      pdf.text(`Fraud Type: ${fraudAnalysis.fraudType.replace(/_/g, ' ')}`, 20, yPosition);
+      yPosition += 10;
+      
+      // Description
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Analysis Description', 20, yPosition);
+      yPosition += 8;
+      
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'normal');
+      const descriptionLines = pdf.splitTextToSize(fraudAnalysis.description, pageWidth - 40);
+      pdf.text(descriptionLines, 20, yPosition);
+      yPosition += descriptionLines.length * 4 + 10;
+      
+      // User Patterns Section
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('User Activity Patterns', 20, yPosition);
+      yPosition += 8;
+      
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Total Activities Analyzed: ${fraudAnalysis.userPatterns.totalActivities}`, 20, yPosition);
+      yPosition += 6;
+      pdf.text(`Fraud Rate: ${fraudAnalysis.userPatterns.fraudRate.toFixed(1)}%`, 20, yPosition);
+      yPosition += 10;
+      
+      // Time Analysis
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Time Analysis:', 20, yPosition);
+      yPosition += 6;
+      pdf.setFont('helvetica', 'normal');
+      const timeLines = pdf.splitTextToSize(fraudAnalysis.userPatterns.timeAnalysis, pageWidth - 40);
+      pdf.text(timeLines, 20, yPosition);
+      yPosition += timeLines.length * 4 + 8;
+      
+      // Location Analysis
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Location Analysis:', 20, yPosition);
+      yPosition += 6;
+      pdf.setFont('helvetica', 'normal');
+      const locationLines = pdf.splitTextToSize(fraudAnalysis.userPatterns.locationAnalysis, pageWidth - 40);
+      pdf.text(locationLines, 20, yPosition);
+      yPosition += locationLines.length * 4 + 10;
+      
+      // Check if we need a new page
+      if (yPosition > pageHeight - 40) {
+        pdf.addPage();
+        yPosition = 20;
+      }
+      
+      // Suspicious Patterns Section
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Detected Suspicious Patterns', 20, yPosition);
+      yPosition += 10;
+      
+      fraudAnalysis.patterns.forEach((pattern, index) => {
+        if (yPosition > pageHeight - 20) {
+          pdf.addPage();
+          yPosition = 20;
+        }
+        
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`${index + 1}. `, 20, yPosition);
+        const patternLines = pdf.splitTextToSize(pattern, pageWidth - 50);
+        pdf.text(patternLines, 30, yPosition);
+        yPosition += patternLines.length * 4 + 3;
+      });
+      
+      yPosition += 10;
+      
+      // AI Recommendations Section
+      if (yPosition > pageHeight - 40) {
+        pdf.addPage();
+        yPosition = 20;
+      }
+      
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('AI Recommendations', 20, yPosition);
+      yPosition += 10;
+      
+      fraudAnalysis.recommendations.forEach((recommendation, index) => {
+        if (yPosition > pageHeight - 20) {
+          pdf.addPage();
+          yPosition = 20;
+        }
+        
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`${index + 1}. `, 20, yPosition);
+        const recLines = pdf.splitTextToSize(recommendation, pageWidth - 50);
+        pdf.text(recLines, 30, yPosition);
+        yPosition += recLines.length * 4 + 3;
+      });
+
+      // System Overview
+      if (telecomStats) {
+        if (yPosition > pageHeight - 60) {
+          pdf.addPage();
+          yPosition = 20;
+        }
+        
+        yPosition += 10;
+        pdf.setFontSize(14);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('System Overview', 20, yPosition);
+        yPosition += 10;
+        
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`Total Activities in System: ${telecomStats.totalActivities}`, 20, yPosition);
+        yPosition += 6;
+        pdf.text(`System-wide Fraud Rate: ${telecomStats.fraudRate}%`, 20, yPosition);
+        yPosition += 6;
+        pdf.text(`Calls Analyzed: ${telecomStats.callCount}`, 20, yPosition);
+        yPosition += 6;
+        pdf.text(`SMS Analyzed: ${telecomStats.smsCount}`, 20, yPosition);
+      }
+      
+      // Save the PDF
+      const filename = `TelecomSOC_Fraud_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+      pdf.save(filename);
+      
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Failed to generate PDF report. Please try again.');
+    }
+  };
+
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case "critical":
@@ -136,18 +312,29 @@ export default function FraudDetection() {
               Gemini-powered fraud pattern analysis and risk assessment
             </p>
           </div>
-          <Button 
-            onClick={handleRunAnalysis} 
-            disabled={isAnalyzing}
-            className="flex items-center gap-2"
-          >
-            {isAnalyzing ? (
-              <RefreshCw className="h-4 w-4 animate-spin" />
-            ) : (
-              <Zap className="h-4 w-4" />
-            )}
-            {isAnalyzing ? "Analyzing..." : "Run Analysis"}
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button 
+              onClick={handleGeneratePDF}
+              disabled={!fraudAnalysis}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Generate PDF Report
+            </Button>
+            <Button 
+              onClick={handleRunAnalysis} 
+              disabled={isAnalyzing}
+              className="flex items-center gap-2"
+            >
+              {isAnalyzing ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <Zap className="h-4 w-4" />
+              )}
+              {isAnalyzing ? "Analyzing..." : "Run Analysis"}
+            </Button>
+          </div>
         </div>
         <Card className="border-red-500/20 bg-red-500/5">
           <CardContent className="pt-6">
@@ -174,18 +361,29 @@ export default function FraudDetection() {
             Gemini-powered fraud pattern analysis and risk assessment
           </p>
         </div>
-        <Button 
-          onClick={handleRunAnalysis} 
-          disabled={isAnalyzing}
-          className="flex items-center gap-2"
-        >
-          {isAnalyzing ? (
-            <RefreshCw className="h-4 w-4 animate-spin" />
-          ) : (
-            <Zap className="h-4 w-4" />
-          )}
-          {isAnalyzing ? "Analyzing..." : "Run New Analysis"}
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button 
+            onClick={handleGeneratePDF}
+            disabled={!fraudAnalysis}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Generate PDF Report
+          </Button>
+          <Button 
+            onClick={handleRunAnalysis} 
+            disabled={isAnalyzing}
+            className="flex items-center gap-2"
+          >
+            {isAnalyzing ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <Zap className="h-4 w-4" />
+            )}
+            {isAnalyzing ? "Analyzing..." : "Run New Analysis"}
+          </Button>
+        </div>
       </div>
 
       {fraudAnalysis && (
